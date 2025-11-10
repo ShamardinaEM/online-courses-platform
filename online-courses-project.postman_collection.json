@@ -1,0 +1,140 @@
+{
+    "info": {
+        "name": "Online Courses API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Create Users",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{ \"name\": \"User1\", \"email\": \"user1@example.com\" }"
+                },
+                "url": {
+                    "raw": "http://localhost:3000/users",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["users"]
+                }
+            }
+        },
+        {
+            "name": "Create Course",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{ \"title\": \"Test Course\", \"description\": \"Описание курса\", \"creatorId\": \"<USER_ID>\", \"isPublished\": true }"
+                },
+                "url": {
+                    "raw": "http://localhost:3000/courses",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["courses"]
+                }
+            }
+        },
+        {
+            "name": "Create Module",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{ \"courseId\": \"<COURSE_ID>\", \"title\": \"Module 1\", \"order\": 1 }"
+                },
+                "url": {
+                    "raw": "http://localhost:3000/modules",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["modules"]
+                }
+            }
+        },
+        {
+            "name": "Create Lesson",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{ \"moduleId\": \"<MODULE_ID>\", \"title\": \"Lesson 1\", \"content\": \"Текст урока\", \"order\": 1 }"
+                },
+                "url": {
+                    "raw": "http://localhost:3000/lessons",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["lessons"]
+                }
+            }
+        },
+        {
+            "name": "Delete Lesson",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "http://localhost:3000/lessons/<LESSON_ID>",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["lessons", "<LESSON_ID>"]
+                }
+            }
+        },
+        {
+            "name": "Delete Module",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "http://localhost:3000/modules/<MODULE_ID>",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["modules", "<MODULE_ID>"]
+                }
+            }
+        },
+        {
+            "name": "Delete Course",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "http://localhost:3000/courses/<COURSE_ID>",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["courses", "<COURSE_ID>"]
+                }
+            }
+        },
+        {
+            "name": "Delete User",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "http://localhost:3000/users/<USER_ID>",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["users", "<USER_ID>"]
+                }
+            }
+        }
+    ]
+}

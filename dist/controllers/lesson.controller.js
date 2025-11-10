@@ -74,7 +74,7 @@ const deleteLesson = async (req, res) => {
     try {
         const { id } = req.params;
         await prisma.$transaction([
-            prisma.studentProgress.deleteMany({ where: { lessonId: id } }),
+            prisma.userProgress.deleteMany({ where: { lessonId: id } }),
             prisma.lesson.delete({ where: { id } }),
         ]);
         res.json({ message: "Урок удалён" });

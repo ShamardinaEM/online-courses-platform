@@ -1,29 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStudentsByCourse = exports.getStudentProgress = exports.markLessonCompleted = void 0;
+exports.getUsersByCourse = exports.getUserProgress = exports.markLessonCompleted = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 // Завершение курса пользователем
 const markLessonCompleted = async (req, res) => {
     try {
-        const { studentId, lessonId } = req.body;
-        if (!studentId || !lessonId)
+        const { userId, lessonId } = req.body;
+        if (!userId || !lessonId)
             return res
                 .status(400)
-                .json({ error: "studentId и lessonId обязательны" });
-        const existing = await prisma.studentProgress.findFirst({
-            where: { studentId, lessonId },
+                .json({ error: "userId и lessonId обязательны" });
+        const existing = await prisma.userProgress.findFirst({
+            where: { userId, lessonId },
         });
         if (existing) {
-            const updated = await prisma.studentProgress.update({
+            const updated = await prisma.userProgress.update({
                 where: { id: existing.id },
                 data: { isCompleted: true, completedAt: new Date() },
             });
             return res.json(updated);
         }
-        const created = await prisma.studentProgress.create({
+        const created = await prisma.userProgress.create({
             data: {
-                studentId,
+                userId,
                 lessonId,
                 isCompleted: true,
                 completedAt: new Date(),
@@ -38,9 +38,9 @@ const markLessonCompleted = async (req, res) => {
 };
 exports.markLessonCompleted = markLessonCompleted;
 // Просмотр прогресса пользователя по урокам курса
-const getStudentProgress = async (req, res) => {
+const getUserProgress = async (req, res) => {
     try {
-        const { studentId, courseId } = req.params;
+        const { userId, courseId } = req.params;
         const modules = await prisma.module.findMany({
             where: { courseId },
             select: { id: true },
@@ -52,16 +52,16 @@ const getStudentProgress = async (req, res) => {
         });
         const total = lessons.length;
         const lessonIds = lessons.map((l) => l.id);
-        const completedCount = await prisma.studentProgress.count({
+        const completedCount = await prisma.userProgress.count({
             where: {
-                studentId,
+                userId,
                 lessonId: { in: lessonIds },
                 isCompleted: true,
             },
         });
         const percent = total === 0 ? 0 : Math.round((completedCount / total) * 100);
         res.json({
-            studentId,
+            userId,
             courseId,
             totalLessons: total,
             completedLessons: completedCount,
@@ -73,9 +73,9 @@ const getStudentProgress = async (req, res) => {
         res.status(500).json({ error: "Ошибка при получении прогресса" });
     }
 };
-exports.getStudentProgress = getStudentProgress;
+exports.getUserProgress = getUserProgress;
 // Получение количества студентов проходящих курс
-const getStudentsByCourse = async (req, res) => {
+const getUsersByCourse = async (req, res) => {
     try {
         const { courseId } = req.params;
         const modules = await prisma.module.findMany({
@@ -88,16 +88,16 @@ const getStudentsByCourse = async (req, res) => {
             select: { id: true },
         });
         const lessonIds = lessons.map((l) => l.id);
-        const progresses = await prisma.studentProgress.findMany({
+        const progresses = await prisma.userProgress.findMany({
             where: { lessonId: { in: lessonIds } },
-            select: { studentId: true },
-            distinct: ["studentId"],
+            select: { userId: true },
+            distinct: ["userId"],
         });
-        const studentIds = progresses.map((p) => p.studentId);
-        const students = await prisma.student.findMany({
-            where: { id: { in: studentIds } },
+        const userIds = progresses.map((p) => p.userId);
+        const users = await prisma.user.findMany({
+            where: { id: { in: userIds } },
         });
-        res.json(students);
+        res.json(users);
     }
     catch (err) {
         console.error(err);
@@ -106,4 +106,4 @@ const getStudentsByCourse = async (req, res) => {
         });
     }
 };
-exports.getStudentsByCourse = getStudentsByCourse;
+exports.getUsersByCourse = getUsersByCourse;

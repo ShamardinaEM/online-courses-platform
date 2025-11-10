@@ -51,7 +51,7 @@ const deleteModule = async (req, res) => {
         });
         const lessonIds = lessons.map((l) => l.id);
         await prisma.$transaction([
-            prisma.studentProgress.deleteMany({
+            prisma.userProgress.deleteMany({
                 where: { lessonId: { in: lessonIds } },
             }),
             prisma.lesson.deleteMany({ where: { id: { in: lessonIds } } }),
