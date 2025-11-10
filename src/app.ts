@@ -3,9 +3,9 @@ import courseRoutes from "./routes/course.route";
 import moduleRoutes from "./routes/module.route";
 import lessonRoutes from "./routes/lesson.route";
 import progressRoutes from "./routes/progress.route";
-import studentRoutes from "./routes/student.routes";
-import quizRoutes from "./routes/quiz.routes";
-import quizAttemptRoutes from "./routes/quizAttempt.routes";
+import studentRoutes from "./routes/student.route";
+import quizRoutes from "./routes/quiz.route";
+import quizAttemptRoutes from "./routes/quizAttempt.route";
 
 const app = express();
 

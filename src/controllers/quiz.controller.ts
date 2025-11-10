@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-    git add .
 const prisma = new PrismaClient();
 
 // Создание викторины (вопроса) для урока
