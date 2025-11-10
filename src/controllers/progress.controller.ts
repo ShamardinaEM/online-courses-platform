@@ -6,27 +6,27 @@ const prisma = new PrismaClient();
 // Завершение курса пользователем
 export const markLessonCompleted = async (req: Request, res: Response) => {
     try {
-        const { studentId, lessonId } = req.body;
-        if (!studentId || !lessonId)
+        const { userId, lessonId } = req.body;
+        if (!userId || !lessonId)
             return res
                 .status(400)
-                .json({ error: "studentId и lessonId обязательны" });
+                .json({ error: "userId и lessonId обязательны" });
 
-        const existing = await prisma.studentProgress.findFirst({
-            where: { studentId, lessonId },
+        const existing = await prisma.userProgress.findFirst({
+            where: { userId, lessonId },
         });
 
         if (existing) {
-            const updated = await prisma.studentProgress.update({
+            const updated = await prisma.userProgress.update({
                 where: { id: existing.id },
                 data: { isCompleted: true, completedAt: new Date() },
             });
             return res.json(updated);
         }
 
-        const created = await prisma.studentProgress.create({
+        const created = await prisma.userProgress.create({
             data: {
-                studentId,
+                userId,
                 lessonId,
                 isCompleted: true,
                 completedAt: new Date(),
@@ -40,9 +40,9 @@ export const markLessonCompleted = async (req: Request, res: Response) => {
 };
 
 // Просмотр прогресса пользователя по урокам курса
-export const getStudentProgress = async (req: Request, res: Response) => {
+export const getUserProgress = async (req: Request, res: Response) => {
     try {
-        const { studentId, courseId } = req.params;
+        const { userId, courseId } = req.params;
         const modules = await prisma.module.findMany({
             where: { courseId },
             select: { id: true },
@@ -56,9 +56,9 @@ export const getStudentProgress = async (req: Request, res: Response) => {
         const total = lessons.length;
         const lessonIds = lessons.map((l) => l.id);
 
-        const completedCount = await prisma.studentProgress.count({
+        const completedCount = await prisma.userProgress.count({
             where: {
-                studentId,
+                userId,
                 lessonId: { in: lessonIds },
                 isCompleted: true,
             },
@@ -68,7 +68,7 @@ export const getStudentProgress = async (req: Request, res: Response) => {
             total === 0 ? 0 : Math.round((completedCount / total) * 100);
 
         res.json({
-            studentId,
+            userId,
             courseId,
             totalLessons: total,
             completedLessons: completedCount,
@@ -81,7 +81,7 @@ export const getStudentProgress = async (req: Request, res: Response) => {
 };
 
 // Получение количества студентов проходящих курс
-export const getStudentsByCourse = async (req: Request, res: Response) => {
+export const getUsersByCourse = async (req: Request, res: Response) => {
     try {
         const { courseId } = req.params;
         const modules = await prisma.module.findMany({
@@ -95,19 +95,19 @@ export const getStudentsByCourse = async (req: Request, res: Response) => {
         });
         const lessonIds = lessons.map((l) => l.id);
 
-        const progresses = await prisma.studentProgress.findMany({
+        const progresses = await prisma.userProgress.findMany({
             where: { lessonId: { in: lessonIds } },
-            select: { studentId: true },
-            distinct: ["studentId"],
+            select: { userId: true },
+            distinct: ["userId"],
         });
 
-        const studentIds = progresses.map((p) => p.studentId);
+        const userIds = progresses.map((p) => p.userId);
 
-        const students = await prisma.student.findMany({
-            where: { id: { in: studentIds } },
+        const users = await prisma.user.findMany({
+            where: { id: { in: userIds } },
         });
 
-        res.json(students);
+        res.json(users);
     } catch (err) {
         console.error(err);
         res.status(500).json({

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
     createQuizAttempt,
-    getAttemptsByStudent,
+    getAttemptsByUser,
     getAttemptsByQuiz,
 } from "../controllers/quizAttempt.controller";
 
@@ -10,8 +10,8 @@ const router = Router();
 // Создать попытку
 router.post("/", createQuizAttempt);
 
-// Получить попытки студента
-router.get("/student/:studentId", getAttemptsByStudent);
+// Получить попытки пользователя
+router.get("/user/:userId", getAttemptsByUser);
 
 // Получить попытки по викторине
 router.get("/quiz/:quizId", getAttemptsByQuiz);

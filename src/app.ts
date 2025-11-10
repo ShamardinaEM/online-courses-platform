@@ -3,7 +3,7 @@ import courseRoutes from "./routes/course.route";
 import moduleRoutes from "./routes/module.route";
 import lessonRoutes from "./routes/lesson.route";
 import progressRoutes from "./routes/progress.route";
-import studentRoutes from "./routes/student.route";
+import userRoutes from "./routes/user.route";
 import quizRoutes from "./routes/quiz.route";
 import quizAttemptRoutes from "./routes/quizAttempt.route";
 
@@ -16,7 +16,7 @@ app.use("/courses", courseRoutes);
 app.use("/modules", moduleRoutes);
 app.use("/lessons", lessonRoutes);
 app.use("/progress", progressRoutes);
-app.use("/students", studentRoutes);
+app.use("/users", userRoutes);
 app.use("/quizzes", quizRoutes);
 app.use("/quiz-attempts", quizAttemptRoutes);
 

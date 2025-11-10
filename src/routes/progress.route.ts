@@ -1,8 +1,8 @@
 import { Router } from "express";
 import {
     markLessonCompleted,
-    getStudentProgress,
-    getStudentsByCourse,
+    getUserProgress,
+    getUsersByCourse,
 } from "../controllers/progress.controller";
 
 const router = Router();
@@ -10,10 +10,10 @@ const router = Router();
 // Отметить урок как завершённый
 router.post("/complete", markLessonCompleted);
 
-// Получить прогресс студента по курсу
-router.get("/:studentId/course/:courseId", getStudentProgress);
+// Получить прогресс пользователей по курсу
+router.get("/:userId/course/:courseId", getUserProgress);
 
-// Получить всех студентов, проходящих курс
-router.get("/course/:courseId/students", getStudentsByCourse);
+// Получить всех пользователей, проходящих курс
+router.get("/course/:courseId/users", getUsersByCourse);
 
 export default router;

@@ -11,7 +11,8 @@ model Course {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   description   String
-  creator       String
+  creatorId     String   @db.ObjectId
+  creator       User  @relation("CourseCreator", fields: [creatorId], references: [id])
   createdAt     DateTime @default(now())
   isPublished   Boolean  @default(false)
   modules       Module[]
@@ -34,24 +35,25 @@ model Lesson {
   order     Int
   module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   quizzes   Quiz[]
-  progress  StudentProgress[]
+  progress  UserProgress[]
 }
 
-model Student {
+model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String   @unique
-  progress  StudentProgress[]
+  progress  UserProgress[]
   attempts  QuizAttempt[]
+  coursesCreated Course[] @relation("CourseCreator")
 }
 
-model StudentProgress {
+model UserProgress {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  studentId   String   @db.ObjectId
+  userId      String   @db.ObjectId
   lessonId    String   @db.ObjectId
   isCompleted Boolean  @default(false)
   completedAt DateTime?
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 }
 
@@ -67,11 +69,11 @@ model Quiz {
 
 model QuizAttempt {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  studentId           String   @db.ObjectId
+  userId           String   @db.ObjectId
   quizId              String   @db.ObjectId
   selectedAnswerIndex Int
   isCorrect           Boolean
   attemptedAt         DateTime @default(now())
-  student             Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user                User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   quiz                Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
 }

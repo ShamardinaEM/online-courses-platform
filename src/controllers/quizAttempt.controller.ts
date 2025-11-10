@@ -6,19 +6,19 @@ const prisma = new PrismaClient();
 // Создать попытку прохождения викторины
 export const createQuizAttempt = async (req: Request, res: Response) => {
     try {
-        const { studentId, quizId, selectedAnswerIndex } = req.body;
+        const { userId, quizId, selectedAnswerIndex } = req.body;
 
-        if (!studentId || !quizId || typeof selectedAnswerIndex !== "number") {
+        if (!userId || !quizId || typeof selectedAnswerIndex !== "number") {
             return res
                 .status(400)
-                .json({ error: "studentId, quizId и selectedAnswerIndex обязательны" });
+                .json({ error: "userId, quizId и selectedAnswerIndex обязательны" });
         }
 
-        const [student, quiz] = await Promise.all([
-            prisma.student.findUnique({ where: { id: studentId } }),
+        const [user, quiz] = await Promise.all([
+            prisma.user.findUnique({ where: { id: userId } }),
             prisma.quiz.findUnique({ where: { id: quizId } }),
         ]);
-        if (!student) return res.status(404).json({ error: "Студент не найден" });
+        if (!user) return res.status(404).json({ error: "Студент не найден" });
         if (!quiz) return res.status(404).json({ error: "Викторина не найдена" });
 
         if (
@@ -32,7 +32,7 @@ export const createQuizAttempt = async (req: Request, res: Response) => {
 
         const isCorrect = selectedAnswerIndex === quiz.correctAnswerIndex;
         const attempt = await prisma.quizAttempt.create({
-            data: { studentId, quizId, selectedAnswerIndex, isCorrect },
+            data: { userId, quizId, selectedAnswerIndex, isCorrect },
         });
         res.status(201).json(attempt);
     } catch (err) {
@@ -42,11 +42,11 @@ export const createQuizAttempt = async (req: Request, res: Response) => {
 };
 
 // Получить попытки по студенту
-export const getAttemptsByStudent = async (req: Request, res: Response) => {
+export const getAttemptsByUser = async (req: Request, res: Response) => {
     try {
-        const { studentId } = req.params;
+        const { userId } = req.params;
         const attempts = await prisma.quizAttempt.findMany({
-            where: { studentId },
+            where: { userId },
             orderBy: { attemptedAt: "desc" },
         });
         res.json(attempts);

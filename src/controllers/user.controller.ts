@@ -4,14 +4,14 @@ import { Request, Response } from "express";
 const prisma = new PrismaClient();
 
 // Создание студента
-export const createStudent = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response) => {
     try {
         const { name, email } = req.body;
         if (!name || !email) {
             return res.status(400).json({ error: "name и email обязательны" });
         }
-        const student = await prisma.student.create({ data: { name, email } });
-        res.status(201).json(student);
+        const user = await prisma.user.create({ data: { name, email } });
+        res.status(201).json(user);
     } catch (err: any) {
         console.error(err);
         if (err?.code === "P2002") {
@@ -22,10 +22,10 @@ export const createStudent = async (req: Request, res: Response) => {
 };
 
 // Получение всех студентов
-export const getStudents = async (req: Request, res: Response) => {
+export const getUsers = async (req: Request, res: Response) => {
     try {
-        const students = await prisma.student.findMany();
-        res.json(students);
+        const users = await prisma.user.findMany();
+        res.json(users);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Ошибка при получении студентов" });
@@ -33,14 +33,14 @@ export const getStudents = async (req: Request, res: Response) => {
 };
 
 // Получение студента по Id
-export const getStudentById = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const student = await prisma.student.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id },
         });
-        if (!student) return res.status(404).json({ error: "Студент не найден" });
-        res.json(student);
+        if (!user) return res.status(404).json({ error: "Студент не найден" });
+        res.json(user);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Ошибка при получении студента" });
@@ -48,15 +48,15 @@ export const getStudentById = async (req: Request, res: Response) => {
 };
 
 // Обновление студента
-export const updateStudent = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { name, email } = req.body;
-        const student = await prisma.student.update({
+        const user = await prisma.user.update({
             where: { id },
             data: { name, email },
         });
-        res.json(student);
+        res.json(user);
     } catch (err: any) {
         console.error(err);
         if (err?.code === "P2002") {
@@ -67,13 +67,13 @@ export const updateStudent = async (req: Request, res: Response) => {
 };
 
 // Удаление студента и связанных сущностей
-export const deleteStudent = async (req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         await prisma.$transaction([
-            prisma.studentProgress.deleteMany({ where: { studentId: id } }),
-            prisma.quizAttempt.deleteMany({ where: { studentId: id } }),
-            prisma.student.delete({ where: { id } }),
+            prisma.userProgress.deleteMany({ where: { userId: id } }),
+            prisma.quizAttempt.deleteMany({ where: { userId: id } }),
+            prisma.user.delete({ where: { id } }),
         ]);
         res.json({ message: "Студент и связанные данные удалены" });
     } catch (err) {

@@ -81,7 +81,7 @@ export const deleteCourse = async (req: Request, res: Response) => {
 
         // транзакция: удаляем прогресс по урокам, уроки, модули, потом курс
         await prisma.$transaction([
-            prisma.studentProgress.deleteMany({
+            prisma.userProgress.deleteMany({
                 where: { lessonId: { in: lessonIds } },
             }),
             prisma.lesson.deleteMany({ where: { id: { in: lessonIds } } }),
