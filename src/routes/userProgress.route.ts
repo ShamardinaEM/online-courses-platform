@@ -3,7 +3,7 @@ import {
     markLessonCompleted,
     getUserProgress,
     getUsersByCourse,
-} from "../controllers/progress.controller";
+} from "../controllers/userProgress.controller";
 
 const router = Router();
 

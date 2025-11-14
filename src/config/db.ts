@@ -1,7 +1,16 @@
-import { PrismaClient } from "@prisma/client";
+import mongoose from "mongoose";
 
-export const prisma = new PrismaClient();
+export const connectDB = async () => {
+    try {
+        const uri = process.env.MONGO_URI;
+        if (!uri) {
+            throw new Error("MONGO_URI is not defined in .env");
+        }
 
-process.on("SIGINT", async () => {
-    await prisma.$disconnect();
-});
+        await mongoose.connect(uri);
+        console.log("MongoDB connected");
+    } catch (err) {
+        console.error("MongoDB connection error:", err);
+        process.exit(1);
+    }
+};

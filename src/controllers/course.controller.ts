@@ -1,13 +1,15 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-
-const prisma = new PrismaClient();
+import Course from "../models/course";
+import Module from "../models/module";
+import Lesson from "../models/lesson";
+import UserProgress from "../models/userProgress";
 
 // Получение всех курсов
-export const getCourses = async (req: Request, res: Response) => {
+export const getCourses = async (_req: Request, res: Response) => {
     try {
-        const courses = await prisma.course.findMany({
-            include: { modules: true },
+        const courses = await Course.find().populate({
+            path: "modules",
+            select: "_id title order",
         });
         res.json(courses);
     } catch (err) {
@@ -16,12 +18,20 @@ export const getCourses = async (req: Request, res: Response) => {
     }
 };
 
-// Создание нового курса
+// Создание курса
 export const createCourse = async (req: Request, res: Response) => {
     try {
-        const { title, description, creator, isPublished } = req.body;
-        const course = await prisma.course.create({
-            data: { title, description, creator, isPublished },
+        const { title, description, creatorId, isPublished } = req.body;
+        if (!title || !creatorId)
+            return res
+                .status(400)
+                .json({ error: "title и creatorId обязательны" });
+
+        const course = await Course.create({
+            title,
+            description,
+            creator: creatorId,
+            isPublished: !!isPublished,
         });
         res.status(201).json(course);
     } catch (err) {
@@ -29,13 +39,14 @@ export const createCourse = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Ошибка при создании курса" });
     }
 };
-// Получение курса по Id
+
+// Получение курса по Id (с модулями и уроками)
 export const getCourseById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const course = await prisma.course.findUnique({
-            where: { id },
-            include: { modules: { include: { lessons: true } } },
+        const course = await Course.findById(id).populate({
+            path: "modules",
+            populate: { path: "lessons" },
         });
         if (!course) return res.status(404).json({ error: "Курс не найден" });
         res.json(course);
@@ -49,45 +60,36 @@ export const getCourseById = async (req: Request, res: Response) => {
 export const updateCourse = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { title, description, creator, isPublished } = req.body;
-        const course = await prisma.course.update({
-            where: { id },
-            data: { title, description, creator, isPublished },
-        });
+        const { title, description, creatorId, isPublished } = req.body;
+        const course = await Course.findByIdAndUpdate(
+            id,
+            { title, description, creator: creatorId, isPublished },
+            { new: true }
+        );
         res.json(course);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Ошибка при обновлении курса" });
     }
 };
+
 // Удаление курса и связанных сущностей
 export const deleteCourse = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
-        // получаем модули курса
-        const modules = await prisma.module.findMany({
-            where: { courseId: id },
-            select: { id: true },
-        });
-        const moduleIds = modules.map((m) => m.id);
+        const modules = await Module.find({ course: id }).select("_id");
+        const moduleIds = modules.map((m) => m._id);
 
-        // получаем уроки модулей
-        const lessons = await prisma.lesson.findMany({
-            where: { moduleId: { in: moduleIds } },
-            select: { id: true },
-        });
-        const lessonIds = lessons.map((l) => l.id);
+        const lessons = await Lesson.find({
+            module: { $in: moduleIds },
+        }).select("_id");
+        const lessonIds = lessons.map((l) => l._id);
 
-        // транзакция: удаляем прогресс по урокам, уроки, модули, потом курс
-        await prisma.$transaction([
-            prisma.userProgress.deleteMany({
-                where: { lessonId: { in: lessonIds } },
-            }),
-            prisma.lesson.deleteMany({ where: { id: { in: lessonIds } } }),
-            prisma.module.deleteMany({ where: { id: { in: moduleIds } } }),
-            prisma.course.delete({ where: { id } }),
-        ]);
+        await UserProgress.deleteMany({ lessonId: { $in: lessonIds } });
+        await Lesson.deleteMany({ _id: { $in: lessonIds } });
+        await Module.deleteMany({ _id: { $in: moduleIds } });
+        await Course.findByIdAndDelete(id);
 
         res.json({ message: "Курс и все связанные сущности успешно удалены" });
     } catch (err) {

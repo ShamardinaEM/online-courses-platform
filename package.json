@@ -4,27 +4,25 @@
     "description": "Платформа онлайн-тестирования",
     "main": "dist/app.js",
     "scripts": {
-        "start": "node dist/app.ts",
-        "dev": "npm run build && nodemon dist/app.js",
+        "start": "node dist/app.js",
+        "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
         "build": "tsc",
-        "prisma:generate": "prisma generate",
-        "prisma:studio": "prisma studio",
         "test": "jest"
     },
     "keywords": [
         "node",
         "express",
-        "prisma",
+        "mongoose",
         "mongodb",
         "typescript",
         "education",
         "backend"
     ],
     "dependencies": {
-        "@prisma/client": "^6.0.0",
         "cors": "^2.8.5",
         "dotenv": "^16.4.5",
         "express": "^4.21.1",
+        "mongoose": "^8.3.0",
         "morgan": "^1.10.0"
     },
     "devDependencies": {
@@ -36,7 +34,6 @@
         "@types/supertest": "^2.0.16",
         "jest": "^30.2.0",
         "nodemon": "^3.1.7",
-        "prisma": "^6.0.0",
         "supertest": "^6.3.4",
         "ts-jest": "^29.4.5",
         "ts-node": "^10.9.2",

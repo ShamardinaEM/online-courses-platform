@@ -1,12 +1,13 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-const prisma = new PrismaClient();
+import { Types } from "mongoose";
+import Quiz from "../models/quiz";
+import Lesson from "../models/lesson";
+import QuizAttempt from "../models/quizAttempt";
 
-// Создание викторины (вопроса) для урока
+// Создание викторины
 export const createQuiz = async (req: Request, res: Response) => {
     try {
         const { lessonId, question, options, correctAnswerIndex } = req.body;
-
         if (
             !lessonId ||
             !question ||
@@ -14,24 +15,33 @@ export const createQuiz = async (req: Request, res: Response) => {
             options.length < 2 ||
             typeof correctAnswerIndex !== "number"
         ) {
-            return res.status(400).json({
-                error:
-                    "lessonId, question, options(>=2) и correctAnswerIndex обязательны",
-            });
+            return res
+                .status(400)
+                .json({
+                    error: "lessonId, question, options(>=2) и correctAnswerIndex обязательны",
+                });
         }
 
-        const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
+        const lesson = await Lesson.findById(lessonId);
         if (!lesson) return res.status(404).json({ error: "Урок не найден" });
-
         if (correctAnswerIndex < 0 || correctAnswerIndex >= options.length) {
             return res
                 .status(400)
-                .json({ error: "Индекс правильного ответа выходит за пределы options" });
+                .json({
+                    error: "Индекс правильного ответа выходит за пределы options",
+                });
         }
 
-        const quiz = await prisma.quiz.create({
-            data: { lessonId, question, options, correctAnswerIndex },
+        const quiz = await Quiz.create({
+            lessonId,
+            question,
+            options,
+            correctAnswerIndex,
         });
+
+        lesson.quizzes.push(quiz._id as Types.ObjectId);
+        await lesson.save();
+
         res.status(201).json(quiz);
     } catch (err) {
         console.error(err);
@@ -39,14 +49,10 @@ export const createQuiz = async (req: Request, res: Response) => {
     }
 };
 
-// Получение всех викторин по уроку
 export const getQuizzesByLesson = async (req: Request, res: Response) => {
     try {
         const { lessonId } = req.params;
-        const quizzes = await prisma.quiz.findMany({
-            where: { lessonId },
-            orderBy: { question: "asc" },
-        });
+        const quizzes = await Quiz.find({ lessonId }).sort({ question: 1 });
         res.json(quizzes);
     } catch (err) {
         console.error(err);
@@ -54,14 +60,12 @@ export const getQuizzesByLesson = async (req: Request, res: Response) => {
     }
 };
 
-// Получение викторины по Id
 export const getQuizById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const quiz = await prisma.quiz.findUnique({
-            where: { id },
-        });
-        if (!quiz) return res.status(404).json({ error: "Викторина не найдена" });
+        const quiz = await Quiz.findById(id);
+        if (!quiz)
+            return res.status(404).json({ error: "Викторина не найдена" });
         res.json(quiz);
     } catch (err) {
         console.error(err);
@@ -69,7 +73,6 @@ export const getQuizById = async (req: Request, res: Response) => {
     }
 };
 
-// Обновление викторины
 export const updateQuiz = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -79,22 +82,27 @@ export const updateQuiz = async (req: Request, res: Response) => {
             if (!Array.isArray(options) || options.length < 2) {
                 return res
                     .status(400)
-                    .json({ error: "options должен быть массивом длиной >= 2" });
+                    .json({
+                        error: "options должен быть массивом длиной >= 2",
+                    });
             }
             if (
                 typeof correctAnswerIndex === "number" &&
                 (correctAnswerIndex < 0 || correctAnswerIndex >= options.length)
             ) {
-                return res.status(400).json({
-                    error: "Индекс правильного ответа выходит за пределы options",
-                });
+                return res
+                    .status(400)
+                    .json({
+                        error: "Индекс правильного ответа выходит за пределы options",
+                    });
             }
         }
 
-        const quiz = await prisma.quiz.update({
-            where: { id },
-            data: { question, options, correctAnswerIndex },
-        });
+        const quiz = await Quiz.findByIdAndUpdate(
+            id,
+            { question, options, correctAnswerIndex },
+            { new: true }
+        );
         res.json(quiz);
     } catch (err) {
         console.error(err);
@@ -102,18 +110,18 @@ export const updateQuiz = async (req: Request, res: Response) => {
     }
 };
 
-// Удаление викторины и ее попыток
 export const deleteQuiz = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        await prisma.$transaction([
-            prisma.quizAttempt.deleteMany({ where: { quizId: id } }),
-            prisma.quiz.delete({ where: { id } }),
-        ]);
+
+        await QuizAttempt.deleteMany({ quizId: id });
+        await Quiz.findByIdAndDelete(id);
+
+        await Lesson.updateOne({ quizzes: id }, { $pull: { quizzes: id } });
+
         res.json({ message: "Викторина удалена" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Ошибка при удалении викторины" });
     }
 };
-

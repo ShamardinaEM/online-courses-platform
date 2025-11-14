@@ -1,20 +1,31 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-
-const prisma = new PrismaClient();
+import { Types } from "mongoose";
+import Module from "../models/module";
+import Course from "../models/course";
+import Lesson from "../models/lesson";
+import UserProgress from "../models/userProgress";
 
 // Создание модуля
 export const createModule = async (req: Request, res: Response) => {
     try {
         const { courseId, title, order } = req.body;
-        const course = await prisma.course.findUnique({
-            where: { id: courseId },
-        });
+        if (!courseId || !title)
+            return res
+                .status(400)
+                .json({ error: "courseId и title обязательны" });
+
+        const course = await Course.findById(courseId);
         if (!course) return res.status(404).json({ error: "Курс не найден" });
 
-        const module = await prisma.module.create({
-            data: { courseId, title, order },
+        const module = await Module.create({
+            course: courseId,
+            title,
+            order: order ?? 0,
         });
+
+        course.modules.push(module._id as Types.ObjectId);
+        await course.save();
+
         res.status(201).json(module);
     } catch (err) {
         console.error(err);
@@ -22,15 +33,13 @@ export const createModule = async (req: Request, res: Response) => {
     }
 };
 
-// Получение всех модулей курса
+// Получение модулей по курсу
 export const getModulesByCourse = async (req: Request, res: Response) => {
     try {
         const { courseId } = req.params;
-        const modules = await prisma.module.findMany({
-            where: { courseId },
-            orderBy: { order: "asc" },
-            include: { lessons: true },
-        });
+        const modules = await Module.find({ course: courseId })
+            .sort({ order: 1 })
+            .populate("lessons");
         res.json(modules);
     } catch (err) {
         console.error(err);
@@ -38,25 +47,19 @@ export const getModulesByCourse = async (req: Request, res: Response) => {
     }
 };
 
-// Удаление модулей и связанных сущностей
+// Удаление модуля и связанных сущностей
 export const deleteModule = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
-        // сначала удалить уроки и прогресс по ним
-        const lessons = await prisma.lesson.findMany({
-            where: { moduleId: id },
-            select: { id: true },
-        });
-        const lessonIds = lessons.map((l) => l.id);
+        const lessons = await Lesson.find({ module: id }).select("_id");
+        const lessonIds = lessons.map((l) => l._id);
 
-        await prisma.$transaction([
-            prisma.userProgress.deleteMany({
-                where: { lessonId: { in: lessonIds } },
-            }),
-            prisma.lesson.deleteMany({ where: { id: { in: lessonIds } } }),
-            prisma.module.delete({ where: { id } }),
-        ]);
+        await UserProgress.deleteMany({ lessonId: { $in: lessonIds } });
+        await Lesson.deleteMany({ _id: { $in: lessonIds } });
+        await Module.findByIdAndDelete(id);
+
+        await Course.updateOne({ modules: id }, { $pull: { modules: id } });
 
         res.json({ message: "Модуль и его уроки удалены" });
     } catch (err) {

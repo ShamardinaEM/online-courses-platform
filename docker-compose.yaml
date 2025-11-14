@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: online_courses_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build: .
+    container_name: online_courses_app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    command: npm run dev
+
+volumes:
+  mongo-data:

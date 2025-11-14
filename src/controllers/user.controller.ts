@@ -1,84 +1,83 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
+import User from "../models/user";
+import UserProgress from "../models/userProgress";
+import QuizAttempt from "../models/quizAttempt";
 
-const prisma = new PrismaClient();
-
-// Создание студента
+// Создание пользователя
 export const createUser = async (req: Request, res: Response) => {
     try {
         const { name, email } = req.body;
-        if (!name || !email) {
+        if (!name || !email)
             return res.status(400).json({ error: "name и email обязательны" });
-        }
-        const user = await prisma.user.create({ data: { name, email } });
-        res.status(201).json(user);
-    } catch (err: any) {
-        console.error(err);
-        if (err?.code === "P2002") {
+
+        const exists = await User.findOne({ email });
+        if (exists)
             return res.status(409).json({ error: "Email уже используется" });
-        }
-        res.status(500).json({ error: "Ошибка при создании студента" });
+
+        const user = await User.create({ name, email });
+        res.status(201).json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Ошибка при создании пользователя" });
     }
 };
 
-// Получение всех студентов
-export const getUsers = async (req: Request, res: Response) => {
+export const getUsers = async (_req: Request, res: Response) => {
     try {
-        const users = await prisma.user.findMany();
+        const users = await User.find();
         res.json(users);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Ошибка при получении студентов" });
+        res.status(500).json({ error: "Ошибка при получении пользователей" });
     }
 };
 
-// Получение студента по Id
 export const getUserById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const user = await prisma.user.findUnique({
-            where: { id },
-        });
-        if (!user) return res.status(404).json({ error: "Студент не найден" });
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ error: "Пользователь не найден" });
         res.json(user);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Ошибка при получении студента" });
+        res.status(500).json({ error: "Ошибка при получении пользователя" });
     }
 };
 
-// Обновление студента
 export const updateUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { name, email } = req.body;
-        const user = await prisma.user.update({
-            where: { id },
-            data: { name, email },
-        });
-        res.json(user);
-    } catch (err: any) {
-        console.error(err);
-        if (err?.code === "P2002") {
-            return res.status(409).json({ error: "Email уже используется" });
+
+        if (email) {
+            const exists = await User.findOne({ email, _id: { $ne: id } });
+            if (exists)
+                return res
+                    .status(409)
+                    .json({ error: "Email уже используется" });
         }
-        res.status(500).json({ error: "Ошибка при обновлении студента" });
+
+        const user = await User.findByIdAndUpdate(
+            id,
+            { name, email },
+            { new: true }
+        );
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Ошибка при обновлении пользователя" });
     }
 };
 
-// Удаление студента и связанных сущностей
 export const deleteUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        await prisma.$transaction([
-            prisma.userProgress.deleteMany({ where: { userId: id } }),
-            prisma.quizAttempt.deleteMany({ where: { userId: id } }),
-            prisma.user.delete({ where: { id } }),
-        ]);
-        res.json({ message: "Студент и связанные данные удалены" });
+        await UserProgress.deleteMany({ userId: id });
+        await QuizAttempt.deleteMany({ userId: id });
+        await User.findByIdAndDelete(id);
+        res.json({ message: "Пользователь и связанные данные удалены" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Ошибка при удалении студента" });
+        res.status(500).json({ error: "Ошибка при удалении пользователя" });
     }
 };
-
