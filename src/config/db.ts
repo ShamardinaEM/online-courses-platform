@@ -2,11 +2,9 @@ import mongoose from "mongoose";
 
 export const connectDB = async () => {
     try {
-        const uri = process.env.MONGO_URI;
-        if (!uri) {
-            throw new Error("MONGO_URI is not defined in .env");
-        }
-
+        const uri =
+            process.env.DATABASE_URL ||
+            "mongodb://localhost:27017/online-courses";
         await mongoose.connect(uri);
         console.log("MongoDB connected");
     } catch (err) {

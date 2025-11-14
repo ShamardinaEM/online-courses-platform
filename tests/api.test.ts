@@ -44,7 +44,7 @@ describe("Online Courses Platform API", () => {
         const res = await request(app).post("/courses").send({
             title: "Тестовый курс",
             description: "Описание курса",
-            creator: userIds[0],
+            creatorId: userIds[0],
             isPublished: true,
         });
 
@@ -55,7 +55,7 @@ describe("Online Courses Platform API", () => {
 
     it("Добавление модуля", async () => {
         const modRes = await request(app).post("/modules").send({
-            course: courseId,
+            courseId: courseId,
             title: "Модуль 1",
             order: 1,
         });
@@ -66,7 +66,7 @@ describe("Online Courses Platform API", () => {
 
     it("Добавление урока", async () => {
         const lessonRes = await request(app).post("/lessons").send({
-            module: moduleId,
+            moduleId: moduleId,
             title: "Урок 1",
             content: "Текст урока",
             order: 1,
