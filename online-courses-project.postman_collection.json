@@ -146,7 +146,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"title\": \"Updated Course\",\n    \"description\": \"Обновленное описание\",\n    \"creatorId\": \"<USER_ID>\",\n    \"isPublished\": false\n}"
+                            "raw": "{\n    \"title\": \"Updated Course\",\n    \"description\": \"Обновленное описание\",\n    \"isPublished\": false\n}"
                         },
                         "url": {
                             "raw": "http://localhost:3000/courses/<COURSE_ID>",
