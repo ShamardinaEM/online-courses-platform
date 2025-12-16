@@ -5,17 +5,23 @@ export const courseSchema = z.object({
     description: z.string().optional(),
     creatorId: z.string().min(1),
     isPublished: z.boolean().default(false),
-    createdAt: z.date()
+    createdAt: z.date(),
 });
 
 export class Course {
-    constructor (
+    constructor(
         public title: string,
         public description: string = "",
         public creatorId: string,
         public isPublished: boolean = false,
-        public createdAt: Date = new Date()
+        public createdAt: Date = new Date(),
     ) {
-        courseSchema.parse({title, description, creatorId, isPublished, createdAt})
+        courseSchema.parse({
+            title,
+            description,
+            creatorId,
+            isPublished,
+            createdAt,
+        });
     }
 }

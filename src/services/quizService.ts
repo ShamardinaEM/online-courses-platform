@@ -2,24 +2,30 @@ import type { Db } from "mongodb";
 import { ObjectId } from "mongodb";
 import { Quiz } from "../models/Quiz";
 
-// 1. Создать викторину
+// Создание викторины
 export async function create_quiz(
-    db: Db, 
-    lessonId: string, 
-    question: string, 
-    options: string[], 
+    db: Db,
+    lessonId: string,
+    question: string,
+    options: string[],
     correctAnswerIndex: number
 ) {
-    if (!lessonId || !question || !Array.isArray(options) || options.length < 2 || 
-        typeof correctAnswerIndex !== "number") {
-        throw new Error("lessonId, question, options(>=2) и correctAnswerIndex обязательны");
+    if (
+        !lessonId ||
+        !question ||
+        !Array.isArray(options) ||
+        options.length < 2 ||
+        typeof correctAnswerIndex !== "number"
+    ) {
+        throw new Error(
+            "lessonId, question, options(>=2) и correctAnswerIndex обязательны"
+        );
     }
 
-    // Проверяем что урок существует
-    const lesson = await db.collection("lessons").findOne({ 
-        _id: new ObjectId(lessonId) 
+    const lesson = await db.collection("lessons").findOne({
+        _id: new ObjectId(lessonId),
     });
-    
+
     if (!lesson) {
         throw new Error("Урок не найден");
     }
@@ -28,90 +34,99 @@ export async function create_quiz(
         throw new Error("Индекс правильного ответа выходит за пределы options");
     }
 
+    const quizId = new ObjectId();
     const quiz = new Quiz(question, options, correctAnswerIndex, lessonId);
-    
+
     await db.collection("quizzes").insertOne({
         ...quiz,
-        _id: new ObjectId()
+        _id: quizId,
     });
-    
-    return quiz;
+
+    return {
+        ...quiz,
+        _id: quizId,
+    };
 }
 
-// 2. Получить викторины урока
+// Получение викторины урока
 export async function get_quizzes_by_lesson(db: Db, lessonId: string) {
-    const quizzes = await db.collection("quizzes")
+    const quizzes = await db
+        .collection("quizzes")
         .find({ lessonId })
         .sort({ question: 1 })
         .toArray();
-    
+
     return quizzes;
 }
 
-// 3. Получить викторину по ID
+// Получение викторины по ID
 export async function get_quiz_by_id(db: Db, quizId: string) {
-    const quiz = await db.collection("quizzes").findOne({ 
-        _id: new ObjectId(quizId) 
+    const quiz = await db.collection("quizzes").findOne({
+        _id: new ObjectId(quizId),
     });
-    
+
     if (!quiz) {
         throw new Error("Викторина не найдена");
     }
-    
+
     return quiz;
 }
 
-// 4. Обновить викторину
+// Обновление викторины
 export async function update_quiz(
-    db: Db, 
-    quizId: string, 
-    question?: string, 
-    options?: string[], 
+    db: Db,
+    quizId: string,
+    question?: string,
+    options?: string[],
     correctAnswerIndex?: number
 ) {
-    // Валидация options если переданы
     if (options) {
         if (!Array.isArray(options) || options.length < 2) {
             throw new Error("options должен быть массивом длиной >= 2");
         }
-        
-        if (typeof correctAnswerIndex === "number" && 
-            (correctAnswerIndex < 0 || correctAnswerIndex >= options.length)) {
-            throw new Error("Индекс правильного ответа выходит за пределы options");
+
+        if (
+            typeof correctAnswerIndex === "number" &&
+            (correctAnswerIndex < 0 || correctAnswerIndex >= options.length)
+        ) {
+            throw new Error(
+                "Индекс правильного ответа выходит за пределы options"
+            );
         }
     }
 
     const updateData: any = {};
-    
+
     if (question !== undefined) updateData.question = question;
     if (options !== undefined) updateData.options = options;
-    if (correctAnswerIndex !== undefined) updateData.correctAnswerIndex = correctAnswerIndex;
-    
-    const result = await db.collection("quizzes").findOneAndUpdate(
-        { _id: new ObjectId(quizId) },
-        { $set: updateData },
-        { returnDocument: 'after' }
-    );
-    
+    if (correctAnswerIndex !== undefined)
+        updateData.correctAnswerIndex = correctAnswerIndex;
+
+    const result = await db
+        .collection("quizzes")
+        .findOneAndUpdate(
+            { _id: new ObjectId(quizId) },
+            { $set: updateData },
+            { returnDocument: "after" }
+        );
+
     if (!result) {
         throw new Error("Викторина не найдена");
     }
-    
+
     return result;
 }
 
-// 5. Удалить викторину
+// Удаление викторины
 export async function delete_quiz(db: Db, quizId: string) {
     const objectId = new ObjectId(quizId);
 
-    // Удаляем попытки викторины
-    await db.collection("quizAttempts").deleteMany({ 
-        quizId: objectId 
+    await db.collection("quizAttempts").deleteMany({
+        quizId: objectId,
     });
 
-    // Удаляем викторину
-    await db.collection("quizzes").deleteOne({ 
-        _id: objectId 
+    await db.collection("quizzes").deleteOne({
+        _id: objectId,
     });
 
     return { message: "Викторина удалена" };

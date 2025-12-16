@@ -8,23 +8,42 @@ export async function get_courses(db: Db) {
 }
 
 // Создание курса
-export async function create_course(db: Db, title: string, description: string, creatorId: string) {
+export async function create_course(
+    db: Db,
+    title: string,
+    description: string,
+    creatorId: string
+) {
+    const courseId = new ObjectId();
     const course = new Course(title, description, creatorId);
-    await db.collection("courses").insertOne(course);
-    return course;
+
+    await db.collection("courses").insertOne({
+        ...course,
+        _id: courseId,
+    });
+
+    return {
+        ...course,
+        _id: courseId,
+    };
 }
 
 // Получение курса по ID
 export async function get_course_by_id(db: Db, courseId: string) {
-    return await db.collection("courses").findOne({ _id: new ObjectId(courseId) });
+    const course = await db
+        .collection("courses")
+        .findOne({ _id: new ObjectId(courseId) });
+
+    if (!course) throw new Error("Курс не найден");
+
+    return course;
 }
 
 // Обновление курса
 export async function update_course(db: Db, courseId: string, data: any) {
-    await db.collection("courses").updateOne(
-        { _id: new ObjectId(courseId) },
-        { $set: data }
-    );
+    await db
+        .collection("courses")
+        .updateOne({ _id: new ObjectId(courseId) }, { $set: data });
 }
 
 // Удаление курса
