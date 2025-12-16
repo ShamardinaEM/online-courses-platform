@@ -14,8 +14,20 @@ export async function create_course(
     description: string,
     creatorId: string
 ) {
+    if (!title || !creatorId) {
+        throw new Error("title и creatorId обязательны");
+    }
+
+    const creatorIdObj = new ObjectId(creatorId);
+
+    // Проверяем что пользователь существует
+    const user = await db.collection("users").findOne({ _id: creatorIdObj });
+    if (!user) {
+        throw new Error("Пользователь не найден");
+    }
+
     const courseId = new ObjectId();
-    const course = new Course(title, description, creatorId);
+    const course = new Course(title, description, creatorIdObj);
 
     await db.collection("courses").insertOne({
         ...course,

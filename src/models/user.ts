@@ -6,10 +6,7 @@ export const userSchema = z.object({
 });
 
 export class User {
-    constructor(
-        public name: string,
-        public email: string,
-    ) {
+    constructor(public name: string, public email: string) {
         userSchema.parse({ name, email });
     }
 }

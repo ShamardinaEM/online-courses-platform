@@ -1,18 +1,19 @@
-import { boolean, z } from "zod";
+import { z } from "zod";
+import { ObjectId } from "mongodb";
 
 export const userProgressSchema = z.object({
-    userId: z.string().min(1),
-    lessonId: z.string().min(1),
+    userId: z.instanceof(ObjectId), 
+    lessonId: z.instanceof(ObjectId),
     isCompleted: z.boolean(),
     completedAt: z.date().optional(),
 });
 
 export class UserProgress {
     constructor(
-        public userId: string,
-        public lessonId: string,
+        public userId: ObjectId,
+        public lessonId: ObjectId,
         public isCompleted: boolean,
-        public completedAt: Date = new Date(),
+        public completedAt: Date = new Date()
     ) {
         userProgressSchema.parse({
             userId,

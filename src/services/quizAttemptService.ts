@@ -12,8 +12,11 @@ export async function create_quiz_attempt(
         throw new Error("userId, quizId и selectedAnswerIndex обязательны");
     }
 
+    const userIdObj = new ObjectId(userId);
+    const quizIdObj = new ObjectId(quizId);
+
     const user = await db.collection("users").findOne({
-        _id: new ObjectId(userId),
+        _id: userIdObj,
     });
 
     if (!user) {
@@ -21,7 +24,7 @@ export async function create_quiz_attempt(
     }
 
     const quiz = await db.collection("quizzes").findOne({
-        _id: new ObjectId(quizId),
+        _id: quizIdObj,
     });
 
     if (!quiz) {
@@ -38,8 +41,8 @@ export async function create_quiz_attempt(
     const attempt = new QuizAttempt(
         isCorrect,
         selectedAnswerIndex,
-        userId,
-        quizId,
+        userIdObj,
+        quizIdObj
     );
 
     await db.collection("quizAttempts").insertOne({

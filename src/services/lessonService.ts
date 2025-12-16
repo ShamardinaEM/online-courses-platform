@@ -14,8 +14,9 @@ export async function create_lesson(
         throw new Error("moduleId и title обязательны");
     }
 
+    const moduleIdObj = new ObjectId(moduleId);
     const module = await db.collection("modules").findOne({
-        _id: new ObjectId(moduleId),
+        _id: moduleIdObj,
     });
 
     if (!module) {
@@ -23,7 +24,7 @@ export async function create_lesson(
     }
 
     const lessonId = new ObjectId();
-    const lesson = new Lesson(title, content, order, moduleId);
+    const lesson = new Lesson(title, content, order, moduleIdObj);
 
     await db.collection("lessons").insertOne({
         ...lesson,
@@ -38,9 +39,10 @@ export async function create_lesson(
 
 // Получение урока модуля
 export async function get_lessons_by_module(db: Db, moduleId: string) {
+    const moduleIdObj = new ObjectId(moduleId);
     const lessons = await db
         .collection("lessons")
-        .find({ moduleId })
+        .find({ moduleId: moduleIdObj }) // Используем ObjectId
         .sort({ order: 1 })
         .toArray();
 

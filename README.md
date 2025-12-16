@@ -16,23 +16,10 @@ Online Courses Platform — это серверное приложение, по
 - Просматривать список студентов, проходящих курс
 
 Приложение написано на TypeScript, использует:
-
-- Express.js — для построения REST API
-- Mongoose — для удобной работы с базой данных MongoDB
+- Typescript + Zod
 - MongoDB — в качестве основной базы данных
 - Docker — для контейнеризации приложения
 
-## Структура проекта
-
-```
-src/
-├── config/          # Конфигурация
-├── models/          # Mongoose модели
-├── controllers/     # Бизнес-логика и обработка запросов
-├── routes/          # Маршруты API
-├── app.ts           # Настройка Express приложения
-└── server.ts        # Точка входа сервера
-```
 
 ## Модели данных
 
@@ -61,46 +48,15 @@ npm install
 
 2. Создайте файл `.env` в корне проекта:
 ```
-DATABASE_URL=mongodb://localhost:27017/online-courses
-PORT=3000
+MONGO_URL=mongodb://localhost:27017/
 ```
 
 3. Запустите MongoDB:
 ```bash
-docker-compose up -d mongo
-```
-
-4. Запустите приложение:
-```bash
-npm run dev
-```
-
-### Запуск с Docker
-
-```bash
 docker-compose up -d
 ```
 
-Приложение будет доступно на порту 5000.
-
-## Тестирование
-
-Для запуска тестов:
+4. Запустите тесты:
 ```bash
-npm test
+npm run test
 ```
-
-Импортируйте коллекцию Postman из файла `online-courses-project.postman_collection.json` для удобного тестирования API.
-
-## Технологический стек
-
-- **TypeScript** — типизированный JavaScript
-- **Express.js** — веб-фреймворк для Node.js
-- **Mongoose** — ODM для MongoDB
-- **MongoDB** — NoSQL база данных
-- **Jest** — фреймворк для тестирования
-- **Supertest** — библиотека для тестирования HTTP запросов
-- **Docker** — контейнеризация приложения
-- **Morgan** — HTTP logger middleware
-- **CORS** — middleware для обработки CORS запросов
-

@@ -22,8 +22,9 @@ export async function create_quiz(
         );
     }
 
+    const lessonIdObj = new ObjectId(lessonId);
     const lesson = await db.collection("lessons").findOne({
-        _id: new ObjectId(lessonId),
+        _id: lessonIdObj,
     });
 
     if (!lesson) {
@@ -35,7 +36,7 @@ export async function create_quiz(
     }
 
     const quizId = new ObjectId();
-    const quiz = new Quiz(question, options, correctAnswerIndex, lessonId);
+    const quiz = new Quiz(question, options, correctAnswerIndex, lessonIdObj);
 
     await db.collection("quizzes").insertOne({
         ...quiz,
@@ -50,9 +51,10 @@ export async function create_quiz(
 
 // Получение викторины урока
 export async function get_quizzes_by_lesson(db: Db, lessonId: string) {
+    const lessonIdObj = new ObjectId(lessonId);
     const quizzes = await db
         .collection("quizzes")
-        .find({ lessonId })
+        .find({ lessonId: lessonIdObj }) // Используем ObjectId
         .sort({ question: 1 })
         .toArray();
 

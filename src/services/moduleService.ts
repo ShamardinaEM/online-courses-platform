@@ -13,8 +13,9 @@ export async function create_module(
         throw new Error("courseId и title обязательны");
     }
 
+    const courseIdObj = new ObjectId(courseId);
     const course = await db.collection("courses").findOne({
-        _id: new ObjectId(courseId),
+        _id: courseIdObj,
     });
 
     if (!course) {
@@ -22,7 +23,7 @@ export async function create_module(
     }
 
     const moduleId = new ObjectId();
-    const module = new Module(title, order, courseId);
+    const module = new Module(title, order, courseIdObj);
 
     await db.collection("modules").insertOne({
         ...module,
@@ -37,9 +38,10 @@ export async function create_module(
 
 // Получение модулей курса
 export async function get_modules_by_course(db: Db, courseId: string) {
+    const courseIdObj = new ObjectId(courseId);
     const modules = await db
         .collection("modules")
-        .find({ courseId })
+        .find({ courseId: courseIdObj }) // Используем ObjectId
         .sort({ order: 1 })
         .toArray();
 
@@ -50,7 +52,12 @@ export async function get_modules_by_course(db: Db, courseId: string) {
 export async function delete_module(db: Db, moduleId: string) {
     const objectId = new ObjectId(moduleId);
 
-    const lessons = await db.collection("lessons").find({ moduleId }).toArray();
+    const lessons = await db
+        .collection("lessons")
+        .find({
+            moduleId: objectId, // Используем ObjectId
+        })
+        .toArray();
 
     const lessonIds = lessons.map((l) => l._id);
 

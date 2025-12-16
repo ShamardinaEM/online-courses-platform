@@ -1,5 +1,6 @@
 import type { Db } from "mongodb";
 import { ObjectId } from "mongodb";
+import { UserProgress } from "../models/UserProgress";
 
 // Отметка урока как пройденного
 export async function mark_lesson_completed(
@@ -33,17 +34,15 @@ export async function mark_lesson_completed(
         return updated;
     }
 
-    const progress = {
-        userId: userIdObj,
-        lessonId: lessonIdObj,
-        isCompleted: true,
-        completedAt: new Date(),
-        _id: new ObjectId(),
-    };
+    const progress = new UserProgress(userIdObj, lessonIdObj, true);
+    const progressId = new ObjectId();
 
-    await db.collection("userProgress").insertOne(progress);
+    await db.collection("userProgress").insertOne({
+        ...progress,
+        _id: progressId,
+    });
 
-    return progress;
+    return { ...progress, _id: progressId };
 }
 
 // Получение прогресса студента по курсу
@@ -57,14 +56,14 @@ export async function get_user_progress_by_course(
 
     const modules = await db
         .collection("modules")
-        .find({ courseId: courseId.toString() })
+        .find({ courseId: courseIdObj }) // Используем ObjectId
         .toArray();
 
     const moduleIds = modules.map((m) => m._id);
 
     const lessons = await db
         .collection("lessons")
-        .find({ moduleId: { $in: moduleIds } })
+        .find({ moduleId: { $in: moduleIds } }) // Используем ObjectId
         .toArray();
 
     const lessonIds = lessons.map((l) => l._id);
@@ -90,12 +89,18 @@ export async function get_user_progress_by_course(
 
 // Получение списока студентов на курсе
 export async function get_users_by_course(db: Db, courseId: string) {
-    const modules = await db.collection("modules").find({ courseId }).toArray();
+    const courseIdObj = new ObjectId(courseId);
+
+    const modules = await db
+        .collection("modules")
+        .find({ courseId: courseIdObj }) // Используем ObjectId
+        .toArray();
 
     const moduleIds = modules.map((m) => m._id);
+
     const lessons = await db
         .collection("lessons")
-        .find({ moduleId: { $in: moduleIds } })
+        .find({ moduleId: { $in: moduleIds } }) // Используем ObjectId
         .toArray();
 
     const lessonIds = lessons.map((l) => l._id);
