@@ -1,23 +1,21 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { z } from "zod";
 
-export interface ICourse extends Document {
-    title: string;
-    description?: string;
-    creator: Types.ObjectId; // ObjectId ref to User
-    createdAt?: Date;
-    isPublished: boolean;
-    modules: Types.ObjectId[]; // ObjectId[] ref to Module
+export const courseSchema = z.object({
+    title: z.string().min(1).max(30),
+    description: z.string().optional(),
+    creatorId: z.string().min(1),
+    isPublished: z.boolean().default(false),
+    createdAt: z.date()
+});
+
+export class Course {
+    constructor (
+        public title: string,
+        public description: string = "",
+        public creatorId: string,
+        public isPublished: boolean = false,
+        public createdAt: Date = new Date()
+    ) {
+        courseSchema.parse({title, description, creatorId, isPublished, createdAt})
+    }
 }
-
-const courseSchema = new Schema<ICourse>(
-    {
-        title: { type: String, required: true },
-        description: { type: String },
-        creator: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        isPublished: { type: Boolean, default: false },
-        modules: [{ type: Schema.Types.ObjectId, ref: "Module" }],
-    },
-    { timestamps: { createdAt: "createdAt", updatedAt: false } }
-);
-
-export default model<ICourse>("Course", courseSchema);

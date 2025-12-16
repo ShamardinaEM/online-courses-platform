@@ -1,20 +1,17 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { z } from "zod";
 
-export interface IModule extends Document {
-    course: Types.ObjectId; // ObjectId ref Course
-    title: string;
-    order: number;
-    lessons: Types.ObjectId[]; // ObjectId[] ref Lesson
+export const moduleSchema = z.object ({
+    title: z.string().min(1).max(30),
+    order: z.number().min(1),
+    courseId: z.string().min(1)
+});
+
+export class Module {
+    constructor(
+        public title: string,
+        public order: number,
+        public courseId: string
+    ) {
+        moduleSchema.parse({title, order, courseId})
+    }
 }
-
-const moduleSchema = new Schema<IModule>(
-    {
-        course: { type: Schema.Types.ObjectId, ref: "Course", required: true },
-        title: { type: String, required: true },
-        order: { type: Number, required: true },
-        lessons: [{ type: Schema.Types.ObjectId, ref: "Lesson" }],
-    },
-    { timestamps: true }
-);
-
-export default model<IModule>("Module", moduleSchema);

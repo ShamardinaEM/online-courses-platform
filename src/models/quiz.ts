@@ -1,26 +1,19 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { z } from "zod";
 
-export interface IQuiz extends Document {
-    lessonId: Types.ObjectId;
-    question: string;
-    options: string[];
-    correctAnswerIndex: number;
-    attempts: Types.ObjectId[]; // ObjectId[] ref QuizAttempt
+export const quizSchema = z.object ({
+    question: z.string().min(10).max(500),
+    options: z.array(z.string()),
+    correctAnswerIndex: z.number(),
+    lessonId: z.string().min(1)
+});
+
+export class Quiz {
+    constructor(
+        public question: string,
+        public options: string[],
+        public correctAnswerIndex: number,
+        public lessonId: string
+    ) {
+        quizSchema.parse({question, options, correctAnswerIndex, lessonId})
+    }
 }
-
-const quizSchema = new Schema<IQuiz>(
-    {
-        lessonId: {
-            type: Schema.Types.ObjectId,
-            ref: "Lesson",
-            required: true,
-        },
-        question: { type: String, required: true },
-        options: [{ type: String, required: true }],
-        correctAnswerIndex: { type: Number, required: true },
-        attempts: [{ type: Schema.Types.ObjectId, ref: "QuizAttempt" }],
-    },
-    { timestamps: true }
-);
-
-export default model<IQuiz>("Quiz", quizSchema);

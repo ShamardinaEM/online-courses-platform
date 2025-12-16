@@ -1,16 +1,13 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { z } from "zod";
 
-export interface IUser extends Document {
-    name: string;
-    email: string;
+export const userSchema = z.object({
+    name: z.string().min(2).max(15),
+    email: z.email("Неверный формат"),
+    createdAt: z.date().optional()
+});
+
+export class User { 
+    constructor(public name: string, public email: string) {
+        userSchema.parse({name, email});
+    }
 }
-
-const userSchema = new Schema<IUser>(
-    {
-        name: { type: String, required: true },
-        email: { type: String, required: true, unique: true },
-    },
-    { timestamps: true }
-);
-
-export default model<IUser>("User", userSchema);

@@ -1,24 +1,19 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { boolean, z } from "zod";
 
-export interface IUserProgress extends Document {
-    userId: Types.ObjectId;
-    lessonId: Types.ObjectId;
-    isCompleted: boolean;
-    completedAt?: Date | null;
+export const userProgressSchema = z.object({
+    userId: z.string().min(1),
+    lessonId: z.string().min(1),
+    isCompleted: z.boolean(),
+    completedAt: z.date().optional()
+});
+
+export class UserProgress { 
+    constructor(
+        public userId: string, 
+        public lessonId: string,
+        public isCompleted: boolean,
+        public completedAt: Date = new Date(),
+    ) {
+        userProgressSchema.parse({userId, lessonId, isCompleted, completedAt});
+    }
 }
-
-const userProgressSchema = new Schema<IUserProgress>(
-    {
-        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        lessonId: {
-            type: Schema.Types.ObjectId,
-            ref: "Lesson",
-            required: true,
-        },
-        isCompleted: { type: Boolean, default: false },
-        completedAt: { type: Date, default: null },
-    },
-    { timestamps: true }
-);
-
-export default model<IUserProgress>("UserProgress", userProgressSchema);

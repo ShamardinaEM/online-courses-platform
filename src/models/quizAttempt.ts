@@ -1,22 +1,21 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { z } from "zod";
 
-export interface IQuizAttempt extends Document {
-    userId: Types.ObjectId;
-    quizId: Types.ObjectId;
-    selectedAnswerIndex: number;
-    isCorrect: boolean;
-    attemptedAt?: Date;
+export const quizAttemptSchema = z.object ({
+    attemptedAt: z.date().optional(),
+    isCorrect: z.boolean(),
+    selectedAnswerIndex: z.number(),
+    userId: z.string().min(1),
+    quizId: z.string().min(1)
+});
+
+export class QuizAttempt {
+    constructor(
+        public attemptedAt: Date = new Date(),
+        public isCorrect: boolean,
+        public selectedAnswerIndex: number,
+        public userId: string,
+        public quizId: string
+    ) {
+        quizAttemptSchema.parse({attemptedAt, isCorrect, selectedAnswerIndex, userId, quizId})
+    }
 }
-
-const quizAttemptSchema = new Schema<IQuizAttempt>(
-    {
-        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        quizId: { type: Schema.Types.ObjectId, ref: "Quiz", required: true },
-        selectedAnswerIndex: { type: Number, required: true },
-        isCorrect: { type: Boolean, required: true },
-        attemptedAt: { type: Date, default: Date.now },
-    },
-    { timestamps: true }
-);
-
-export default model<IQuizAttempt>("QuizAttempt", quizAttemptSchema);

@@ -9,21 +9,5 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  app:
-    build: .
-    container_name: online_courses_app
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    environment:
-      - DATABASE_URL=mongodb://mongo:27017/online-courses
-      - PORT=3000
-    volumes:
-      - ./src:/app/src 
-      - ./package.json:/app/package.json
-      - ./tsconfig.json:/app/tsconfig.json
-    command: npm run dev
-
 volumes:
   mongo-data:
