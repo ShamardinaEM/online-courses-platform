@@ -4,8 +4,6 @@ import { User } from "../models/User";
 
 // Создание пользователя
 export async function create_user(db: Db, name: string, email: string) {
-    if (!name || !email) throw new Error("name и email обязательны");
-
     const exists = await db.collection("users").findOne({ email });
     if (exists) throw new Error("Email уже используется");
 

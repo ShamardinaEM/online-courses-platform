@@ -9,10 +9,6 @@ export async function create_module(
     title: string,
     order: number = 1
 ) {
-    if (!courseId || !title) {
-        throw new Error("courseId и title обязательны");
-    }
-
     const course = await db.collection("courses").findOne({
         _id: courseId,
     });

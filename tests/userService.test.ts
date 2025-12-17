@@ -20,14 +20,6 @@ describe("User Service", () => {
         });
     });
 
-    test("create_user валидирует поля", async () => {
-        await run(async (db) => {
-            await expect(create_user(db, "", "ivan@test.com")).rejects.toThrow(
-                "name и email обязательны"
-            );
-        });
-    });
-
     test("create_user проверяет уникальность email", async () => {
         await run(async (db) => {
             await create_user(db, "Иван", "ivan@test.com");

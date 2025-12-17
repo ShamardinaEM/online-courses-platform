@@ -14,10 +14,7 @@ export async function create_course(
     description: string,
     creatorId: ObjectId
 ) {
-    if (!title || !creatorId) {
-        throw new Error("title и creatorId обязательны");
-    }
-
+    
     const user = await db.collection("users").findOne({ _id: creatorId });
     if (!user) {
         throw new Error("Пользователь не найден");

@@ -10,18 +10,6 @@ export async function create_quiz(
     options: string[],
     correctAnswerIndex: number
 ) {
-    if (
-        !lessonId ||
-        !question ||
-        !Array.isArray(options) ||
-        options.length < 2 ||
-        typeof correctAnswerIndex !== "number"
-    ) {
-        throw new Error(
-            "lessonId, question, options(>=2) и correctAnswerIndex обязательны"
-        );
-    }
-
     const lesson = await db.collection("lessons").findOne({
         _id: lessonId,
     });

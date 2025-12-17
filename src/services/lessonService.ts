@@ -10,10 +10,6 @@ export async function create_lesson(
     content: string = "",
     order: number = 1
 ) {
-    if (!moduleId || !title) {
-        throw new Error("moduleId и title обязательны");
-    }
-
     const module = await db.collection("modules").findOne({
         _id: moduleId,
     });
@@ -36,7 +32,7 @@ export async function create_lesson(
     };
 }
 
-// Получение урока модуля
+// Получение уроков модуля
 export async function get_lessons_by_module(db: Db, moduleId: ObjectId) {
     const lessons = await db
         .collection("lessons")

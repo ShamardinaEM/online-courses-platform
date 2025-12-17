@@ -8,10 +8,6 @@ export async function mark_lesson_completed(
     userId: ObjectId,
     lessonId: ObjectId
 ) {
-    if (!userId || !lessonId) {
-        throw new Error("userId и lessonId обязательны");
-    }
-
     const existing = await db.collection("userProgress").findOne({
         userId: userId,
         lessonId: lessonId,

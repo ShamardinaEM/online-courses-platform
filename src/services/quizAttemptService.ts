@@ -8,10 +8,6 @@ export async function create_quiz_attempt(
     quizId: ObjectId,
     selectedAnswerIndex: number
 ) {
-    if (!userId || !quizId || typeof selectedAnswerIndex !== "number") {
-        throw new Error("userId, quizId и selectedAnswerIndex обязательны");
-    }
-
     const user = await db.collection("users").findOne({
         _id: userId,
     });
