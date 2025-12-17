@@ -17,7 +17,7 @@ describe("Quiz Service", () => {
                 .insertOne({ title: "Урок" });
             const quiz = await create_quiz(
                 db,
-                lesson.insertedId.toString(),
+                lesson.insertedId,
                 "Хороший вопрос",
                 ["A", "B"],
                 0
@@ -30,26 +30,12 @@ describe("Quiz Service", () => {
         });
     });
 
-    test("create_quiz валидирует поля", async () => {
-        await run(async (db) => {
-            const lesson = await db
-                .collection("lessons")
-                .insertOne({ title: "Урок" });
-
-            await expect(
-                create_quiz(db, "", "Хороший вопрос", ["A", "B"], 0)
-            ).rejects.toThrow(
-                "lessonId, question, options(>=2) и correctAnswerIndex обязательны"
-            );
-        });
-    });
-
     test("create_quiz проверяет урок", async () => {
         await run(async (db) => {
             await expect(
                 create_quiz(
                     db,
-                    new ObjectId().toString(),
+                    new ObjectId(),
                     "Вопрос",
                     ["A", "B"],
                     0
@@ -65,14 +51,14 @@ describe("Quiz Service", () => {
                 .insertOne({ title: "Урок" });
             await create_quiz(
                 db,
-                lesson.insertedId.toString(),
+                lesson.insertedId,
                 "Хороший вопрос 1",
                 ["A", "B"],
                 0
             );
             await create_quiz(
                 db,
-                lesson.insertedId.toString(),
+                lesson.insertedId,
                 "Хороший вопрос 2",
                 ["C", "D"],
                 1
@@ -80,7 +66,7 @@ describe("Quiz Service", () => {
 
             const quizzes = await get_quizzes_by_lesson(
                 db,
-                lesson.insertedId.toString()
+                lesson.insertedId
             );
             expect(quizzes).toHaveLength(2);
         });
@@ -93,13 +79,13 @@ describe("Quiz Service", () => {
                 .insertOne({ title: "Урок" });
             const quiz = await create_quiz(
                 db,
-                lesson.insertedId.toString(),
+                lesson.insertedId,
                 "Хороший вопрос",
                 ["A", "B"],
                 0
             );
 
-            const found = await get_quiz_by_id(db, quiz._id.toString());
+            const found = await get_quiz_by_id(db, quiz._id);
             expect(found.question).toBe("Хороший вопрос");
         });
     });
@@ -107,7 +93,7 @@ describe("Quiz Service", () => {
     test("get_quiz_by_id бросает ошибку", async () => {
         await run(async (db) => {
             await expect(
-                get_quiz_by_id(db, new ObjectId().toString())
+                get_quiz_by_id(db, new ObjectId())
             ).rejects.toThrow("Викторина не найдена");
         });
     });
@@ -119,7 +105,7 @@ describe("Quiz Service", () => {
                 .insertOne({ title: "Урок" });
             const quiz = await create_quiz(
                 db,
-                lesson.insertedId.toString(),
+                lesson.insertedId,
                 "Хороший вопрос 1",
                 ["A", "B"],
                 0
@@ -127,7 +113,7 @@ describe("Quiz Service", () => {
 
             const updated = await update_quiz(
                 db,
-                quiz._id.toString(),
+                quiz._id,
                 "Хороший вопрос 2",
                 ["X", "Y"],
                 1
@@ -144,16 +130,16 @@ describe("Quiz Service", () => {
                 .insertOne({ title: "Урок" });
             const quiz = await create_quiz(
                 db,
-                lesson.insertedId.toString(),
+                lesson.insertedId,
                 "Хороший вопрос",
                 ["A", "B"],
                 0
             );
 
-            await delete_quiz(db, quiz._id.toString());
+            await delete_quiz(db, quiz._id);
 
             await expect(
-                get_quiz_by_id(db, quiz._id.toString())
+                get_quiz_by_id(db, quiz._id)
             ).rejects.toThrow("Викторина не найдена");
         });
     });

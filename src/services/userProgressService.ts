@@ -5,19 +5,16 @@ import { UserProgress } from "../models/UserProgress";
 // Отметка урока как пройденного
 export async function mark_lesson_completed(
     db: Db,
-    userId: string,
-    lessonId: string
+    userId: ObjectId,
+    lessonId: ObjectId
 ) {
     if (!userId || !lessonId) {
         throw new Error("userId и lessonId обязательны");
     }
 
-    const userIdObj = new ObjectId(userId);
-    const lessonIdObj = new ObjectId(lessonId);
-
     const existing = await db.collection("userProgress").findOne({
-        userId: userIdObj,
-        lessonId: lessonIdObj,
+        userId: userId,
+        lessonId: lessonId,
     });
 
     if (existing) {
@@ -34,7 +31,7 @@ export async function mark_lesson_completed(
         return updated;
     }
 
-    const progress = new UserProgress(userIdObj, lessonIdObj, true);
+    const progress = new UserProgress(userId, lessonId, true);
     const progressId = new ObjectId();
 
     await db.collection("userProgress").insertOne({
@@ -48,29 +45,27 @@ export async function mark_lesson_completed(
 // Получение прогресса студента по курсу
 export async function get_user_progress_by_course(
     db: Db,
-    userId: string,
-    courseId: string
+    userId: ObjectId,
+    courseId: ObjectId
 ) {
-    const userIdObj = new ObjectId(userId);
-    const courseIdObj = new ObjectId(courseId);
 
     const modules = await db
         .collection("modules")
-        .find({ courseId: courseIdObj }) // Используем ObjectId
+        .find({ courseId: courseId })
         .toArray();
 
     const moduleIds = modules.map((m) => m._id);
 
     const lessons = await db
         .collection("lessons")
-        .find({ moduleId: { $in: moduleIds } }) // Используем ObjectId
+        .find({ moduleId: { $in: moduleIds } })
         .toArray();
 
     const lessonIds = lessons.map((l) => l._id);
     const total = lessonIds.length;
 
     const completedCount = await db.collection("userProgress").countDocuments({
-        userId: userIdObj,
+        userId: userId,
         lessonId: { $in: lessonIds },
         isCompleted: true,
     });
@@ -88,19 +83,18 @@ export async function get_user_progress_by_course(
 }
 
 // Получение списока студентов на курсе
-export async function get_users_by_course(db: Db, courseId: string) {
-    const courseIdObj = new ObjectId(courseId);
+export async function get_users_by_course(db: Db, courseId: ObjectId) {
 
     const modules = await db
         .collection("modules")
-        .find({ courseId: courseIdObj }) // Используем ObjectId
+        .find({ courseId: courseId }) 
         .toArray();
 
     const moduleIds = modules.map((m) => m._id);
 
     const lessons = await db
         .collection("lessons")
-        .find({ moduleId: { $in: moduleIds } }) // Используем ObjectId
+        .find({ moduleId: { $in: moduleIds } })
         .toArray();
 
     const lessonIds = lessons.map((l) => l._id);
@@ -110,10 +104,7 @@ export async function get_users_by_course(db: Db, courseId: string) {
         .find({ lessonId: { $in: lessonIds } })
         .toArray();
 
-    const userIds = Array.from(
-        new Set(progresses.map((p) => p.userId.toString()))
-    ).map((id) => new ObjectId(id));
-
+    const userIds = Array.from(new Set(progresses.map((p) => p.userId)));
     const users = await db
         .collection("users")
         .find({ _id: { $in: userIds } })

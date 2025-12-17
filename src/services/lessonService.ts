@@ -5,7 +5,7 @@ import { Lesson } from "../models/Lesson";
 // Создание урока
 export async function create_lesson(
     db: Db,
-    moduleId: string,
+    moduleId: ObjectId,
     title: string,
     content: string = "",
     order: number = 1
@@ -14,9 +14,8 @@ export async function create_lesson(
         throw new Error("moduleId и title обязательны");
     }
 
-    const moduleIdObj = new ObjectId(moduleId);
     const module = await db.collection("modules").findOne({
-        _id: moduleIdObj,
+        _id: moduleId,
     });
 
     if (!module) {
@@ -24,7 +23,7 @@ export async function create_lesson(
     }
 
     const lessonId = new ObjectId();
-    const lesson = new Lesson(title, content, order, moduleIdObj);
+    const lesson = new Lesson(title, content, order, moduleId);
 
     await db.collection("lessons").insertOne({
         ...lesson,
@@ -38,11 +37,10 @@ export async function create_lesson(
 }
 
 // Получение урока модуля
-export async function get_lessons_by_module(db: Db, moduleId: string) {
-    const moduleIdObj = new ObjectId(moduleId);
+export async function get_lessons_by_module(db: Db, moduleId: ObjectId) {
     const lessons = await db
         .collection("lessons")
-        .find({ moduleId: moduleIdObj }) // Используем ObjectId
+        .find({ moduleId: moduleId })
         .sort({ order: 1 })
         .toArray();
 
@@ -50,9 +48,9 @@ export async function get_lessons_by_module(db: Db, moduleId: string) {
 }
 
 // Получение урока по ID
-export async function get_lesson_by_id(db: Db, lessonId: string) {
+export async function get_lesson_by_id(db: Db, lessonId: ObjectId) {
     const lesson = await db.collection("lessons").findOne({
-        _id: new ObjectId(lessonId),
+        _id: lessonId,
     });
 
     if (!lesson) {
@@ -65,7 +63,7 @@ export async function get_lesson_by_id(db: Db, lessonId: string) {
 // Обновление урока
 export async function update_lesson(
     db: Db,
-    lessonId: string,
+    lessonId: ObjectId,
     title?: string,
     content?: string,
     order?: number
@@ -79,7 +77,7 @@ export async function update_lesson(
     const result = await db
         .collection("lessons")
         .findOneAndUpdate(
-            { _id: new ObjectId(lessonId) },
+            { _id: lessonId },
             { $set: updateData },
             { returnDocument: "after" }
         );
@@ -92,15 +90,14 @@ export async function update_lesson(
 }
 
 // Удаление урока
-export async function delete_lesson(db: Db, lessonId: string) {
-    const objectId = new ObjectId(lessonId);
-
+export async function delete_lesson(db: Db, lessonId: ObjectId) {
+    
     await db.collection("userProgress").deleteMany({
-        lessonId: objectId,
+        lessonId: lessonId,
     });
 
     await db.collection("lessons").deleteOne({
-        _id: objectId,
+        _id: lessonId,
     });
 
     return { message: "Урок удалён" };

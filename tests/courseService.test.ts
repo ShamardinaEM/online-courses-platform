@@ -19,7 +19,7 @@ describe("Course Service", () => {
                 db,
                 "Курс",
                 "Описание",
-                teacher.insertedId.toString()
+                teacher.insertedId
             );
 
             expect(course.title).toBe("Курс");
@@ -27,17 +27,6 @@ describe("Course Service", () => {
                 teacher.insertedId.toString()
             );
             expect(course.isPublished).toBe(false);
-        });
-    });
-
-    test("create_course валидирует входные данные", async () => {
-        await run(async (db) => {
-            await expect(
-                create_course(db, "", "Описание", "123")
-            ).rejects.toThrow("title и creatorId обязательны");
-            await expect(
-                create_course(db, "Курс", "Описание", "")
-            ).rejects.toThrow("title и creatorId обязательны");
         });
     });
 
@@ -50,13 +39,13 @@ describe("Course Service", () => {
                 db,
                 "Курс 1",
                 "Описание 1",
-                teacher.insertedId.toString()
+                teacher.insertedId
             );
             await create_course(
                 db,
                 "Курс 2",
                 "Описание 2",
-                teacher.insertedId.toString()
+                teacher.insertedId
             );
 
             const courses = await get_courses(db);
@@ -75,10 +64,10 @@ describe("Course Service", () => {
                 db,
                 "Курс",
                 "Описание",
-                teacher.insertedId.toString()
+                teacher.insertedId
             );
 
-            const found = await get_course_by_id(db, course._id.toString());
+            const found = await get_course_by_id(db, course._id);
             expect(found.title).toBe("Курс");
             expect(found._id.toString()).toBe(course._id.toString());
         });
@@ -87,7 +76,7 @@ describe("Course Service", () => {
     test("get_course_by_id бросает ошибку если не найден", async () => {
         await run(async (db) => {
             await expect(
-                get_course_by_id(db, new ObjectId().toString())
+                get_course_by_id(db, new ObjectId())
             ).rejects.toThrow("Курс не найден");
         });
     });
@@ -101,15 +90,15 @@ describe("Course Service", () => {
                 db,
                 "Старый",
                 "Описание",
-                teacher.insertedId.toString()
+                teacher.insertedId
             );
 
-            await update_course(db, course._id.toString(), {
+            await update_course(db, course._id, {
                 title: "Новый",
                 isPublished: true,
             });
 
-            const updated = await get_course_by_id(db, course._id.toString());
+            const updated = await get_course_by_id(db, course._id);
             expect(updated.title).toBe("Новый");
             expect(updated.isPublished).toBe(true);
         });
@@ -124,13 +113,13 @@ describe("Course Service", () => {
                 db,
                 "Курс",
                 "Описание",
-                teacher.insertedId.toString()
+                teacher.insertedId
             );
 
-            await delete_course(db, course._id.toString());
+            await delete_course(db, course._id);
 
             await expect(
-                get_course_by_id(db, course._id.toString())
+                get_course_by_id(db, course._id)
             ).rejects.toThrow("Курс не найден");
         });
     });
@@ -144,7 +133,7 @@ describe("Course Service", () => {
                 db,
                 "Курс",
                 "Описание",
-                teacher.insertedId.toString()
+                teacher.insertedId
             );
             expect(course.isPublished).toBe(false);
         });

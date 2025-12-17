@@ -5,7 +5,7 @@ import { Module } from "../models/Module";
 // Создание модуля
 export async function create_module(
     db: Db,
-    courseId: string,
+    courseId: ObjectId,
     title: string,
     order: number = 1
 ) {
@@ -13,9 +13,8 @@ export async function create_module(
         throw new Error("courseId и title обязательны");
     }
 
-    const courseIdObj = new ObjectId(courseId);
     const course = await db.collection("courses").findOne({
-        _id: courseIdObj,
+        _id: courseId,
     });
 
     if (!course) {
@@ -23,7 +22,7 @@ export async function create_module(
     }
 
     const moduleId = new ObjectId();
-    const module = new Module(title, order, courseIdObj);
+    const module = new Module(title, order, courseId);
 
     await db.collection("modules").insertOne({
         ...module,
@@ -37,11 +36,10 @@ export async function create_module(
 }
 
 // Получение модулей курса
-export async function get_modules_by_course(db: Db, courseId: string) {
-    const courseIdObj = new ObjectId(courseId);
+export async function get_modules_by_course(db: Db, courseId: ObjectId) {
     const modules = await db
         .collection("modules")
-        .find({ courseId: courseIdObj }) // Используем ObjectId
+        .find({ courseId: courseId })
         .sort({ order: 1 })
         .toArray();
 
@@ -49,13 +47,12 @@ export async function get_modules_by_course(db: Db, courseId: string) {
 }
 
 // Удаление модуля
-export async function delete_module(db: Db, moduleId: string) {
-    const objectId = new ObjectId(moduleId);
+export async function delete_module(db: Db, moduleId: ObjectId) {
 
     const lessons = await db
         .collection("lessons")
         .find({
-            moduleId: objectId, // Используем ObjectId
+            moduleId: moduleId,
         })
         .toArray();
 
@@ -72,7 +69,7 @@ export async function delete_module(db: Db, moduleId: string) {
         });
     }
     await db.collection("modules").deleteOne({
-        _id: objectId,
+        _id: moduleId,
     });
 
     return { message: "Модуль и его уроки удалены" };

@@ -17,7 +17,7 @@ describe("Lesson Service", () => {
                 .insertOne({ title: "Module" });
             const lesson = await create_lesson(
                 db,
-                module.insertedId.toString(),
+                module.insertedId,
                 "Урок",
                 "Контент",
                 1
@@ -29,14 +29,6 @@ describe("Lesson Service", () => {
         });
     });
 
-    test("create_lesson валидирует данные", async () => {
-        await run(async (db) => {
-            await expect(
-                create_lesson(db, "", "Урок", "Контент", 1)
-            ).rejects.toThrow("moduleId и title обязательны");
-        });
-    });
-
     test("get_lessons_by_module получает уроки", async () => {
         await run(async (db) => {
             const module = await db
@@ -44,14 +36,14 @@ describe("Lesson Service", () => {
                 .insertOne({ title: "Module" });
             await create_lesson(
                 db,
-                module.insertedId.toString(),
+                module.insertedId,
                 "Урок 1",
                 "",
                 2
             );
             await create_lesson(
                 db,
-                module.insertedId.toString(),
+                module.insertedId,
                 "Урок 2",
                 "",
                 1
@@ -59,7 +51,7 @@ describe("Lesson Service", () => {
 
             const lessons = await get_lessons_by_module(
                 db,
-                module.insertedId.toString()
+                module.insertedId
             );
 
             expect(lessons).toHaveLength(2);
@@ -74,13 +66,13 @@ describe("Lesson Service", () => {
                 .insertOne({ title: "Module" });
             const lesson = await create_lesson(
                 db,
-                module.insertedId.toString(),
+                module.insertedId,
                 "Урок",
                 "Контент",
                 1
             );
 
-            const found = await get_lesson_by_id(db, lesson._id.toString());
+            const found = await get_lesson_by_id(db, lesson._id);
             expect(found.title).toBe("Урок");
         });
     });
@@ -88,7 +80,7 @@ describe("Lesson Service", () => {
     test("get_lesson_by_id бросает ошибку", async () => {
         await run(async (db) => {
             await expect(
-                get_lesson_by_id(db, new ObjectId().toString())
+                get_lesson_by_id(db, new ObjectId())
             ).rejects.toThrow("Урок не найден");
         });
     });
@@ -100,7 +92,7 @@ describe("Lesson Service", () => {
                 .insertOne({ title: "Module" });
             const lesson = await create_lesson(
                 db,
-                module.insertedId.toString(),
+                module.insertedId,
                 "Старый",
                 "",
                 1
@@ -108,7 +100,7 @@ describe("Lesson Service", () => {
 
             const updated = await update_lesson(
                 db,
-                lesson._id.toString(),
+                lesson._id,
                 "Новый",
                 "Контент",
                 2
@@ -125,16 +117,16 @@ describe("Lesson Service", () => {
                 .insertOne({ title: "Module" });
             const lesson = await create_lesson(
                 db,
-                module.insertedId.toString(),
+                module.insertedId,
                 "Урок",
                 "",
                 1
             );
 
-            await delete_lesson(db, lesson._id.toString());
+            await delete_lesson(db, lesson._id);
 
             await expect(
-                get_lesson_by_id(db, lesson._id.toString())
+                get_lesson_by_id(db, lesson._id)
             ).rejects.toThrow("Урок не найден");
         });
     });

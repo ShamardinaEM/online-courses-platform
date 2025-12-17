@@ -52,17 +52,17 @@ describe("User Service", () => {
     test("get_user_by_id находит пользователя", async () => {
         await run(async (db) => {
             const user = await create_user(db, "Иван", "ivan@test.com");
-            const found = await get_user_by_id(db, user._id.toString());
+            const found = await get_user_by_id(db, user._id);
 
             expect(found.name).toBe("Иван");
-            expect(found._id.toString()).toBe(user._id.toString());
+            expect(found._id).toStrictEqual(user._id);
         });
     });
 
     test("get_user_by_id бросает ошибку", async () => {
         await run(async (db) => {
             await expect(
-                get_user_by_id(db, new ObjectId().toString())
+                get_user_by_id(db, new ObjectId())
             ).rejects.toThrow("Пользователь не найден");
         });
     });
@@ -73,7 +73,7 @@ describe("User Service", () => {
 
             const updated = await update_user(
                 db,
-                user._id.toString(),
+                user._id,
                 "Новое имя",
                 "new@test.com"
             );
@@ -89,7 +89,7 @@ describe("User Service", () => {
             const user2 = await create_user(db, "Петр", "petr@test.com");
 
             await expect(
-                update_user(db, user2._id.toString(), "Петр", "ivan@test.com")
+                update_user(db, user2._id, "Петр", "ivan@test.com")
             ).rejects.toThrow("Email уже используется");
         });
     });
@@ -98,10 +98,10 @@ describe("User Service", () => {
         await run(async (db) => {
             const user = await create_user(db, "Иван", "ivan@test.com");
 
-            await delete_user(db, user._id.toString());
+            await delete_user(db, user._id);
 
             await expect(
-                get_user_by_id(db, user._id.toString())
+                get_user_by_id(db, user._id)
             ).rejects.toThrow("Пользователь не найден");
         });
     });
@@ -122,7 +122,7 @@ describe("User Service", () => {
                 selectedAnswerIndex: 0,
             });
 
-            await delete_user(db, user._id.toString());
+            await delete_user(db, user._id);
 
             const progressCount = await db
                 .collection("userProgress")

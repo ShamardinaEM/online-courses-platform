@@ -29,9 +29,9 @@ export async function get_users(db: Db) {
 }
 
 // Получение пользователя по ID
-export async function get_user_by_id(db: Db, userId: string) {
+export async function get_user_by_id(db: Db, userId: ObjectId) {
     const user = await db.collection("users").findOne({
-        _id: new ObjectId(userId),
+        _id: userId,
     });
 
     if (!user) throw new Error("Пользователь не найден");
@@ -42,7 +42,7 @@ export async function get_user_by_id(db: Db, userId: string) {
 // Обновление пользователя
 export async function update_user(
     db: Db,
-    userId: string,
+    userId: ObjectId,
     name?: string,
     email?: string
 ) {
@@ -54,7 +54,7 @@ export async function update_user(
     if (email) {
         const exists = await db.collection("users").findOne({
             email,
-            _id: { $ne: new ObjectId(userId) },
+            _id: { $ne: userId },
         });
 
         if (exists) throw new Error("Email уже используется");
@@ -63,7 +63,7 @@ export async function update_user(
     const result = await db
         .collection("users")
         .findOneAndUpdate(
-            { _id: new ObjectId(userId) },
+            { _id: userId },
             { $set: updateData },
             { returnDocument: "after" }
         );
@@ -74,12 +74,11 @@ export async function update_user(
 }
 
 // Удаление пользователя
-export async function delete_user(db: Db, userId: string) {
-    const objectId = new ObjectId(userId);
+export async function delete_user(db: Db, userId: ObjectId) {
 
-    await db.collection("userProgress").deleteMany({ userId: objectId });
-    await db.collection("quizAttempts").deleteMany({ userId: objectId });
-    await db.collection("users").deleteOne({ _id: objectId });
+    await db.collection("userProgress").deleteMany({ userId: userId });
+    await db.collection("quizAttempts").deleteMany({ userId: userId });
+    await db.collection("users").deleteOne({ _id: userId });
 
     return { message: "Пользователь и связанные данные удалены" };
 }

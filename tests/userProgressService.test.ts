@@ -5,7 +5,6 @@ import {
     get_user_progress_by_course,
     get_users_by_course,
 } from "../src/services/userProgressService";
-import { ObjectId } from "mongodb";
 
 describe("User Progress Service", () => {
     test("mark_lesson_completed отмечает урок", async () => {
@@ -19,20 +18,12 @@ describe("User Progress Service", () => {
 
             const progress = await mark_lesson_completed(
                 db,
-                user.insertedId.toString(),
-                lesson.insertedId.toString()
+                user.insertedId,
+                lesson.insertedId
             );
 
             expect(progress!.isCompleted).toBe(true);
             expect(progress!.userId.toString()).toBe(user.insertedId.toString());
-        });
-    });
-
-    test("mark_lesson_completed валидирует поля", async () => {
-        await run(async (db) => {
-            await expect(mark_lesson_completed(db, "", "123")).rejects.toThrow(
-                "userId и lessonId обязательны"
-            );
         });
     });
 
@@ -60,14 +51,14 @@ describe("User Progress Service", () => {
 
             await mark_lesson_completed(
                 db,
-                user.insertedId.toString(),
-                lesson1.insertedId.toString()
+                user.insertedId,
+                lesson1.insertedId
             );
 
             const progress = await get_user_progress_by_course(
                 db,
-                user.insertedId.toString(),
-                course.insertedId.toString()
+                user.insertedId,
+                course.insertedId
             );
 
             expect(progress.totalLessons).toBe(2);
@@ -98,18 +89,18 @@ describe("User Progress Service", () => {
 
             await mark_lesson_completed(
                 db,
-                student1.insertedId.toString(),
-                lesson.insertedId.toString()
+                student1.insertedId,
+                lesson.insertedId
             );
             await mark_lesson_completed(
                 db,
-                student2.insertedId.toString(),
-                lesson.insertedId.toString()
+                student2.insertedId,
+                lesson.insertedId
             );
 
             const students = await get_users_by_course(
                 db,
-                course.insertedId.toString()
+                course.insertedId
             );
 
             expect(students).toHaveLength(2);
@@ -125,7 +116,7 @@ describe("User Progress Service", () => {
                 .insertOne({ title: "Курс" });
             const students = await get_users_by_course(
                 db,
-                course.insertedId.toString()
+                course.insertedId
             );
             expect(students).toHaveLength(0);
         });

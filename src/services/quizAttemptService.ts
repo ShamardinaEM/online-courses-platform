@@ -4,19 +4,16 @@ import { QuizAttempt } from "../models/QuizAttempt";
 
 export async function create_quiz_attempt(
     db: Db,
-    userId: string,
-    quizId: string,
+    userId: ObjectId,
+    quizId: ObjectId,
     selectedAnswerIndex: number
 ) {
     if (!userId || !quizId || typeof selectedAnswerIndex !== "number") {
         throw new Error("userId, quizId и selectedAnswerIndex обязательны");
     }
 
-    const userIdObj = new ObjectId(userId);
-    const quizIdObj = new ObjectId(quizId);
-
     const user = await db.collection("users").findOne({
-        _id: userIdObj,
+        _id: userId,
     });
 
     if (!user) {
@@ -24,7 +21,7 @@ export async function create_quiz_attempt(
     }
 
     const quiz = await db.collection("quizzes").findOne({
-        _id: quizIdObj,
+        _id: quizId,
     });
 
     if (!quiz) {
@@ -41,8 +38,8 @@ export async function create_quiz_attempt(
     const attempt = new QuizAttempt(
         isCorrect,
         selectedAnswerIndex,
-        userIdObj,
-        quizIdObj
+        userId,
+        quizId
     );
 
     await db.collection("quizAttempts").insertOne({

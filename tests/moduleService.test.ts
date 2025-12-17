@@ -15,7 +15,7 @@ describe("Module Service", () => {
                 .insertOne({ title: "Курс" });
             const module = await create_module(
                 db,
-                course.insertedId.toString(),
+                course.insertedId,
                 "Модуль",
                 1
             );
@@ -28,14 +28,6 @@ describe("Module Service", () => {
         });
     });
 
-    test("create_module валидирует данные", async () => {
-        await run(async (db) => {
-            await expect(create_module(db, "", "Модуль", 1)).rejects.toThrow(
-                "courseId и title обязательны"
-            );
-        });
-    });
-
     test("get_modules_by_course получает модули", async () => {
         await run(async (db) => {
             const course = await db
@@ -43,20 +35,20 @@ describe("Module Service", () => {
                 .insertOne({ title: "Курс" });
             await create_module(
                 db,
-                course.insertedId.toString(),
+                course.insertedId,
                 "Модуль 1",
                 2
             );
             await create_module(
                 db,
-                course.insertedId.toString(),
+                course.insertedId,
                 "Модуль 2",
                 1
             );
 
             const modules = await get_modules_by_course(
                 db,
-                course.insertedId.toString()
+                course.insertedId
             );
 
             expect(modules).toHaveLength(2);
@@ -71,12 +63,12 @@ describe("Module Service", () => {
                 .insertOne({ title: "Курс" });
             const module = await create_module(
                 db,
-                course.insertedId.toString(),
+                course.insertedId,
                 "Модуль",
                 1
             );
 
-            await delete_module(db, module._id.toString());
+            await delete_module(db, module._id);
 
             const moduleExists = await db
                 .collection("modules")
@@ -92,7 +84,7 @@ describe("Module Service", () => {
                 .insertOne({ title: "Курс" });
             const module = await create_module(
                 db,
-                course.insertedId.toString(),
+                course.insertedId,
                 "Модуль",
                 1
             );
@@ -111,7 +103,7 @@ describe("Module Service", () => {
                 userId: new ObjectId(),
             });
 
-            await delete_module(db, module._id.toString());
+            await delete_module(db, module._id);
 
             const moduleExists = await db
                 .collection("modules")

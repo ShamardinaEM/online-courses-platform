@@ -12,22 +12,19 @@ export async function create_course(
     db: Db,
     title: string,
     description: string,
-    creatorId: string
+    creatorId: ObjectId
 ) {
     if (!title || !creatorId) {
         throw new Error("title и creatorId обязательны");
     }
 
-    const creatorIdObj = new ObjectId(creatorId);
-
-    // Проверяем что пользователь существует
-    const user = await db.collection("users").findOne({ _id: creatorIdObj });
+    const user = await db.collection("users").findOne({ _id: creatorId });
     if (!user) {
         throw new Error("Пользователь не найден");
     }
 
     const courseId = new ObjectId();
-    const course = new Course(title, description, creatorIdObj);
+    const course = new Course(title, description, creatorId);
 
     await db.collection("courses").insertOne({
         ...course,
@@ -41,10 +38,10 @@ export async function create_course(
 }
 
 // Получение курса по ID
-export async function get_course_by_id(db: Db, courseId: string) {
+export async function get_course_by_id(db: Db, courseId: ObjectId) {
     const course = await db
         .collection("courses")
-        .findOne({ _id: new ObjectId(courseId) });
+        .findOne({ _id: courseId });
 
     if (!course) throw new Error("Курс не найден");
 
@@ -52,13 +49,13 @@ export async function get_course_by_id(db: Db, courseId: string) {
 }
 
 // Обновление курса
-export async function update_course(db: Db, courseId: string, data: any) {
+export async function update_course(db: Db, courseId: ObjectId, data: any) {
     await db
         .collection("courses")
-        .updateOne({ _id: new ObjectId(courseId) }, { $set: data });
+        .updateOne({ _id: courseId }, { $set: data });
 }
 
 // Удаление курса
-export async function delete_course(db: Db, courseId: string) {
-    await db.collection("courses").deleteOne({ _id: new ObjectId(courseId) });
+export async function delete_course(db: Db, courseId: ObjectId) {
+    await db.collection("courses").deleteOne({ _id: courseId });
 }

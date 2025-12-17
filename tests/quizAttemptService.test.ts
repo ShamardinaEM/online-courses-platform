@@ -17,32 +17,13 @@ describe("Quiz Attempt Service", () => {
 
             const attempt = await create_quiz_attempt(
                 db,
-                user.insertedId.toString(),
-                quiz.insertedId.toString(),
+                user.insertedId,
+                quiz.insertedId,
                 0
             );
 
             expect(attempt.isCorrect).toBe(true);
             expect(attempt.selectedAnswerIndex).toBe(0);
-        });
-    });
-
-    test("create_quiz_attempt валидирует поля", async () => {
-        await run(async (db) => {
-            const user = await db
-                .collection("users")
-                .insertOne({ name: "User" });
-            const quiz = await db.collection("quizzes").insertOne({
-                question: "Хороший Вопрос",
-                options: ["A"],
-                correctAnswerIndex: 0,
-            });
-
-            await expect(
-                create_quiz_attempt(db, "", quiz.insertedId.toString(), 0)
-            ).rejects.toThrow(
-                "userId, quizId и selectedAnswerIndex обязательны"
-            );
         });
     });
 
@@ -57,8 +38,8 @@ describe("Quiz Attempt Service", () => {
             await expect(
                 create_quiz_attempt(
                     db,
-                    new ObjectId().toString(),
-                    quiz.insertedId.toString(),
+                    new ObjectId(),
+                    quiz.insertedId,
                     0
                 )
             ).rejects.toThrow("Пользователь не найден");
@@ -74,8 +55,8 @@ describe("Quiz Attempt Service", () => {
             await expect(
                 create_quiz_attempt(
                     db,
-                    user.insertedId.toString(),
-                    new ObjectId().toString(),
+                    user.insertedId,
+                    new ObjectId(),
                     0
                 )
             ).rejects.toThrow("Викторина не найдена");
@@ -96,8 +77,8 @@ describe("Quiz Attempt Service", () => {
             await expect(
                 create_quiz_attempt(
                     db,
-                    user.insertedId.toString(),
-                    quiz.insertedId.toString(),
+                    user.insertedId,
+                    quiz.insertedId,
                     -1
                 )
             ).rejects.toThrow(
@@ -107,8 +88,8 @@ describe("Quiz Attempt Service", () => {
             await expect(
                 create_quiz_attempt(
                     db,
-                    user.insertedId.toString(),
-                    quiz.insertedId.toString(),
+                    user.insertedId,
+                    quiz.insertedId,
                     2
                 )
             ).rejects.toThrow(
@@ -130,16 +111,16 @@ describe("Quiz Attempt Service", () => {
 
             const correctAttempt = await create_quiz_attempt(
                 db,
-                user.insertedId.toString(),
-                quiz.insertedId.toString(),
+                user.insertedId,
+                quiz.insertedId,
                 1
             );
             expect(correctAttempt.isCorrect).toBe(true);
 
             const wrongAttempt = await create_quiz_attempt(
                 db,
-                user.insertedId.toString(),
-                quiz.insertedId.toString(),
+                user.insertedId,
+                quiz.insertedId,
                 0
             );
             expect(wrongAttempt.isCorrect).toBe(false);

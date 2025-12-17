@@ -5,7 +5,7 @@ import { Quiz } from "../models/Quiz";
 // Создание викторины
 export async function create_quiz(
     db: Db,
-    lessonId: string,
+    lessonId: ObjectId,
     question: string,
     options: string[],
     correctAnswerIndex: number
@@ -22,9 +22,8 @@ export async function create_quiz(
         );
     }
 
-    const lessonIdObj = new ObjectId(lessonId);
     const lesson = await db.collection("lessons").findOne({
-        _id: lessonIdObj,
+        _id: lessonId,
     });
 
     if (!lesson) {
@@ -36,7 +35,7 @@ export async function create_quiz(
     }
 
     const quizId = new ObjectId();
-    const quiz = new Quiz(question, options, correctAnswerIndex, lessonIdObj);
+    const quiz = new Quiz(question, options, correctAnswerIndex, lessonId);
 
     await db.collection("quizzes").insertOne({
         ...quiz,
@@ -50,11 +49,10 @@ export async function create_quiz(
 }
 
 // Получение викторины урока
-export async function get_quizzes_by_lesson(db: Db, lessonId: string) {
-    const lessonIdObj = new ObjectId(lessonId);
+export async function get_quizzes_by_lesson(db: Db, lessonId: ObjectId) {
     const quizzes = await db
         .collection("quizzes")
-        .find({ lessonId: lessonIdObj }) // Используем ObjectId
+        .find({ lessonId: lessonId })
         .sort({ question: 1 })
         .toArray();
 
@@ -62,9 +60,9 @@ export async function get_quizzes_by_lesson(db: Db, lessonId: string) {
 }
 
 // Получение викторины по ID
-export async function get_quiz_by_id(db: Db, quizId: string) {
+export async function get_quiz_by_id(db: Db, quizId: ObjectId) {
     const quiz = await db.collection("quizzes").findOne({
-        _id: new ObjectId(quizId),
+        _id: quizId,
     });
 
     if (!quiz) {
@@ -77,7 +75,7 @@ export async function get_quiz_by_id(db: Db, quizId: string) {
 // Обновление викторины
 export async function update_quiz(
     db: Db,
-    quizId: string,
+    quizId: ObjectId,
     question?: string,
     options?: string[],
     correctAnswerIndex?: number
@@ -107,7 +105,7 @@ export async function update_quiz(
     const result = await db
         .collection("quizzes")
         .findOneAndUpdate(
-            { _id: new ObjectId(quizId) },
+            { _id: quizId },
             { $set: updateData },
             { returnDocument: "after" }
         );
@@ -120,15 +118,13 @@ export async function update_quiz(
 }
 
 // Удаление викторины
-export async function delete_quiz(db: Db, quizId: string) {
-    const objectId = new ObjectId(quizId);
-
+export async function delete_quiz(db: Db, quizId: ObjectId) {
     await db.collection("quizAttempts").deleteMany({
-        quizId: objectId,
+        quizId: quizId,
     });
 
     await db.collection("quizzes").deleteOne({
-        _id: objectId,
+        _id: quizId,
     });
 
     return { message: "Викторина удалена" };
