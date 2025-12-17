@@ -6,7 +6,7 @@ export const quizAttemptSchema = z.object({
     selectedAnswerIndex: z.number(),
     userId: z.instanceof(ObjectId),
     quizId: z.instanceof(ObjectId),
-    attemptedAt: z.date().optional(),
+    attemptedAt: z.date(),
 });
 
 export class QuizAttempt {

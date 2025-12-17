@@ -5,7 +5,7 @@ export const userProgressSchema = z.object({
     userId: z.instanceof(ObjectId), 
     lessonId: z.instanceof(ObjectId),
     isCompleted: z.boolean(),
-    completedAt: z.date().optional(),
+    completedAt: z.date(),
 });
 
 export class UserProgress {
